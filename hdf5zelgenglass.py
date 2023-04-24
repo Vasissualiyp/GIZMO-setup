@@ -13,10 +13,11 @@ IntType = np.int32
 # Constants and input parameters
 z_i = 100.0
 z_c = 1.0
-rho_0 = 2.7e-8 / 0.972988
+rho_0 = 2.7e-8 / 0.972989
 H_0 = 100.0
 T_i = 100.0
 lambda_ = 64000.0
+OmegaMatter = 1.0
 
 # Derived constants
 k = 2 * np.pi / lambda_
@@ -46,9 +47,6 @@ T = np.zeros([NumberOfCells], dtype=FloatType)
 SmoothingLength = np.zeros([NumberOfCells], dtype=FloatType)
 ZeroData = np.zeros([NumberOfCells], dtype=FloatType) # Just an array of zeroes
 Rho = np.zeros([NumberOfCells], dtype=FloatType)
-#Pos[:,0] = xx.reshape(NumberOfCells)
-#Pos[:,1] = yy.reshape(NumberOfCells)
-#Pos[:,2] = zz.reshape(NumberOfCells)
 
 # Generate glass-like initial conditions
 np.random.seed(42)  # Set seed for reproducibility
@@ -62,18 +60,22 @@ Pos[:, 2] = (zz + displacements[:, :, :, 2]).reshape(NumberOfCells)
 Rho[:] = rho_0 / (1 - (1 + z_c) / (1 + z_i) * np.cos(k * Pos[:,0]))
 T[:] = T_i * (((1 + z_i) / (1 + z_i)) * (Rho[:] / rho_0))**(2 / 3) / 122
 
+# set up final grid in x
+Pos[:,0] = Pos[:,0] - (1 + z_c) / (1 + z_i) * (np.sin(k * Pos[:,0]) / k)
+
 # Calculate peculiar and then comoving velocities
 Vel_peculiar[:,0] = -H_0 * (1 + z_c) / np.sqrt(1 + z_i) * (np.sin(k * Pos[:,0]) / k) * 2000 / 1400
 Vel_peculiar[:,1] = 0.0
 Vel_peculiar[:,2] = 0.0
 Vel_comoving = Vel_peculiar / (1 + z_i) # Convert peculiar to comoving velocity
 
-# set up final grid in x
-Pos[:,0] = Pos[:,0] - (1 + z_c) / (1 + z_i) * (np.sin(k * Pos[:,0]) / k)
-
 # Calculate mass and internal energy
-Mass = Rho * (Boxsize / CellsPerDimension)**3
-SmoothingLength[:] = Boxsize / CellsPerDimension * (ZeroData[:] + 1)* 1.97 # Last term is the "nudging factor"
+nudge = 1.97
+SmoothingLength[:] = Boxsize / CellsPerDimension * (ZeroData[:] + 1)* nudge  # Last term is the "nudging factor"
+Mass = Rho * (SmoothingLength / nudge)**3
+#total_mass = np.sum(Mass)
+#mass_normalization = total_mass / (Boxsize**3 * OmegaMatter)
+#Mass /= mass_normalization
 gamma = 5.0 / 3.0
 Uthermal = T / (gamma - 1.0)
 
@@ -109,7 +111,7 @@ header.attrs.create("NumPart_Total", np.array([NumberOfCells, 0, 0, 0, 0, 0], dt
 header.attrs.create("NumPart_Total_HighWord", np.array([0, 0, 0, 0, 0, 0], dtype=np.uint32))
 header.attrs.create("Omega_Baryon", 1)
 header.attrs.create("Omega_Lambda", 0)
-header.attrs.create("Omega_Matter", 1)
+header.attrs.create("Omega_Matter", OmegaMatter)
 header.attrs.create("Omega_Radiation", 0)
 header.attrs.create("Redshift", 100)
 header.attrs.create("Time", 0.00990099)
