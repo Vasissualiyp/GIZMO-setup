@@ -6,6 +6,6 @@ SERVER_FOLDER="/Zeldovich3"
 
 IN_FILE="IC.hdf5"
 
-python hdf5zelgen.py .
+python hdf5zelgenglass.py .
 
 rsync $IN_FILE  "$SERVER:""$SCRATCH""$SERVER_FOLDER"

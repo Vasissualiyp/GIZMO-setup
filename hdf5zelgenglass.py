@@ -14,7 +14,7 @@ IntType = np.int32
 z_i = 100.0
 z_c = 1.0
 rho_0 = 2.7e-8 / 0.972989
-H_0 = 100.0
+H_0 = 100.0 
 T_i = 100.0
 lambda_ = 64000.0
 OmegaMatter = 1.0
@@ -72,7 +72,7 @@ Vel_comoving = Vel_peculiar / (1 + z_i) # Convert peculiar to comoving velocity
 # Calculate mass and internal energy
 nudge = 1.97
 SmoothingLength[:] = Boxsize / CellsPerDimension * (ZeroData[:] + 1)* nudge  # Last term is the "nudging factor"
-Mass = Rho * (SmoothingLength / nudge)**3
+Mass = Rho * (SmoothingLength / nudge)**3 
 #total_mass = np.sum(Mass)
 #mass_normalization = total_mass / (Boxsize**3 * OmegaMatter)
 #Mass /= mass_normalization
