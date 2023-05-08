@@ -1,7 +1,41 @@
 import sys
+from noise import snoise3
+import scipy.spatial as spatial
+from scipy.spatial import Voronoi, voronoi_plot_2d
+from scipy.special import erfinv
 from scipy.ndimage import gaussian_filter
 import numpy as np
 import h5py
+
+## Voronoi structure generation functions {{{
+def lloyd_algorithm(points, iterations, bounds):
+    for _ in range(iterations):
+        vor = Voronoi(points)
+        centroids = []
+        for region in vor.regions:
+            if not region: continue
+            polygon = [vor.vertices[i] for i in region]
+            if not any(p[0] < bounds[0] or p[0] > bounds[1] or p[1] < bounds[2] or p[1] > bounds[3] for p in polygon):
+                centroids.append(np.mean(polygon, axis=0))
+        points = np.array(centroids)
+    return points
+
+def create_glass_IC(lambda_, cells_per_dimension):
+    np.random.seed(42)  # For reproducibility
+    n_particles = cells_per_dimension ** 3
+    bounds = [0, lambda_, 0, lambda_, 0, lambda_]
+
+    # Create initial random particle distribution
+    points = np.random.rand(n_particles, 3) * lambda_
+
+    # Apply Lloyd's algorithm to relax the particle distribution
+    relaxed_points = lloyd_algorithm(points, iterations=100, bounds=bounds)
+
+    # Save the particle distribution
+    np.savetxt('glass_IC.txt', relaxed_points, fmt='%.6f', delimiter='\t')
+
+    return relaxed_points
+##}}}
 
 simulation_directory = str(sys.argv[1])
 print("Creating Zeldovich Pancake ICs in directory " + simulation_directory)
@@ -58,6 +92,11 @@ Rho = np.zeros([NumberOfCells], dtype=FloatType)
 #Pos[:, 1] = (yy + displacements[:, :, :, 1]).reshape(NumberOfCells)
 #Pos[:, 2] = (zz + displacements[:, :, :, 2]).reshape(NumberOfCells)
 
+# New block of code to generate glass-like initial conditions using Voronoi tessellation
+#glass_IC = create_glass_IC(lambda_, CellsPerDimension)
+#Pos = glass_IC
+# End of the new block of code
+
 # Generate glass-like initial conditions using Gaussian function {{{
 np.random.seed(42)  # Set seed for reproducibility
 
@@ -66,18 +105,24 @@ random_displacement = 0.1 * dx
 std_fraction = 0.5
 gaussian_std_dev = lambda_ / CellsPerDimension * std_fraction
 
-# Generate white noise
-displacements = np.random.uniform(-random_displacement, random_displacement, size=(CellsPerDimension, CellsPerDimension, CellsPerDimension, 3))
 
-# Apply Gaussian filter to the white noise
-displacements_smooth = np.zeros_like(displacements)
-for i in range(3):
-    displacements_smooth[:, :, :, i] = gaussian_filter(displacements[:, :, :, i], sigma=gaussian_std_dev)
+displacements = np.zeros((CellsPerDimension, CellsPerDimension, CellsPerDimension, 3))
+scale = 1  # Adjust this parameter to control the frequency of the noise
 
+for x in range(CellsPerDimension):
+    for y in range(CellsPerDimension):
+        for z in range(CellsPerDimension):
+            dx = snoise3(x * scale, y * scale, z * scale, octaves=1, persistence=0.5, lacunarity=2.0)
+            dy = snoise3((x + 1000) * scale, (y + 1000) * scale, (z + 1000) * scale, octaves=1, persistence=0.5, lacunarity=2.0)
+            dz = snoise3((x + 2000) * scale, (y + 2000) * scale, (z + 2000) * scale, octaves=1, persistence=0.5, lacunarity=2.0)
+            displacements[x, y, z] = [dx, dy, dz]
+
+
+displacements *= random_displacement
 # Update positions using the Gaussian filtered displacements
-Pos[:, 0] = (xx + displacements_smooth[:, :, :, 0]).reshape(NumberOfCells)
-Pos[:, 1] = (xx + displacements_smooth[:, :, :, 1]).reshape(NumberOfCells)
-Pos[:, 2] = (xx + displacements_smooth[:, :, :, 2]).reshape(NumberOfCells)
+Pos[:, 0] = (xx + displacements[:, :, :, 0]).reshape(NumberOfCells)
+Pos[:, 1] = (xx + displacements[:, :, :, 1]).reshape(NumberOfCells)
+Pos[:, 2] = (xx + displacements[:, :, :, 2]).reshape(NumberOfCells)
 #}}}
 
 # Calculate Temperature and density
