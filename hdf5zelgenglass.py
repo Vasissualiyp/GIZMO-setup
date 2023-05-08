@@ -1,4 +1,5 @@
 import sys
+from scipy.ndimage import gaussian_filter
 import numpy as np
 import h5py
 
@@ -22,8 +23,9 @@ OmegaMatter = 1.0
 # Derived constants
 k = 2 * np.pi / lambda_
 
+# Simulation Parameters
 Boxsize = FloatType(lambda_)
-CellsPerDimension = IntType(64)
+CellsPerDimension = IntType(128)
 NumberOfCells = CellsPerDimension * CellsPerDimension * CellsPerDimension
 
 ## spacing
@@ -48,13 +50,35 @@ SmoothingLength = np.zeros([NumberOfCells], dtype=FloatType)
 ZeroData = np.zeros([NumberOfCells], dtype=FloatType) # Just an array of zeroes
 Rho = np.zeros([NumberOfCells], dtype=FloatType)
 
-# Generate glass-like initial conditions
+## Generate glass-like initial conditions
+#np.random.seed(42)  # Set seed for reproducibility
+#random_displacement = 0.1 * dx  # Set the maximum random displacement
+#displacements = np.random.uniform(-random_displacement, random_displacement, size=(CellsPerDimension, CellsPerDimension, CellsPerDimension, 3))
+#Pos[:, 0] = (xx + displacements[:, :, :, 0]).reshape(NumberOfCells)
+#Pos[:, 1] = (yy + displacements[:, :, :, 1]).reshape(NumberOfCells)
+#Pos[:, 2] = (zz + displacements[:, :, :, 2]).reshape(NumberOfCells)
+
+# Generate glass-like initial conditions using Gaussian function {{{
 np.random.seed(42)  # Set seed for reproducibility
-random_displacement = 0.1 * dx  # Set the maximum random displacement
+
+# Set the maximum random displacement and the standard deviation for the Gaussian filter
+random_displacement = 0.1 * dx
+std_fraction = 0.5
+gaussian_std_dev = lambda_ / CellsPerDimension * std_fraction
+
+# Generate white noise
 displacements = np.random.uniform(-random_displacement, random_displacement, size=(CellsPerDimension, CellsPerDimension, CellsPerDimension, 3))
-Pos[:, 0] = (xx + displacements[:, :, :, 0]).reshape(NumberOfCells)
-Pos[:, 1] = (yy + displacements[:, :, :, 1]).reshape(NumberOfCells)
-Pos[:, 2] = (zz + displacements[:, :, :, 2]).reshape(NumberOfCells)
+
+# Apply Gaussian filter to the white noise
+displacements_smooth = np.zeros_like(displacements)
+for i in range(3):
+    displacements_smooth[:, :, :, i] = gaussian_filter(displacements[:, :, :, i], sigma=gaussian_std_dev)
+
+# Update positions using the Gaussian filtered displacements
+Pos[:, 0] = (xx + displacements_smooth[:, :, :, 0]).reshape(NumberOfCells)
+Pos[:, 1] = (xx + displacements_smooth[:, :, :, 1]).reshape(NumberOfCells)
+Pos[:, 2] = (xx + displacements_smooth[:, :, :, 2]).reshape(NumberOfCells)
+#}}}
 
 # Calculate Temperature and density
 Rho[:] = rho_0 / (1 - (1 + z_c) / (1 + z_i) * np.cos(k * Pos[:,0]))
@@ -65,12 +89,13 @@ Pos[:,0] = Pos[:,0] - (1 + z_c) / (1 + z_i) * (np.sin(k * Pos[:,0]) / k)
 
 # Calculate peculiar and then comoving velocities
 Vel_peculiar[:,0] = -H_0 * (1 + z_c) / np.sqrt(1 + z_i) * (np.sin(k * Pos[:,0]) / k) * 2000 / 1400
-Vel_peculiar[:,1] = 0.0
-Vel_peculiar[:,2] = 0.0
+#Make up some random small y and z velocities
+Vel_peculiar[:,1] = 0.0 #(-H_0 * (1 + z_c) / np.sqrt(1 + z_i) * displacements[:, :, :, 2] / k /100).reshape(NumberOfCells)
+Vel_peculiar[:,2] = 0.0 #(-H_0 * (1 + z_c) / np.sqrt(1 + z_i) * displacements[:, :, :, 1] / k /100).reshape(NumberOfCells)
 Vel_comoving = Vel_peculiar / (1 + z_i) # Convert peculiar to comoving velocity
 
 # Calculate mass and internal energy
-nudge = 1.97
+nudge = 1.97 
 SmoothingLength[:] = Boxsize / CellsPerDimension * (ZeroData[:] + 1)* nudge  # Last term is the "nudging factor"
 Mass = Rho * (SmoothingLength / nudge)**3 
 #total_mass = np.sum(Mass)
