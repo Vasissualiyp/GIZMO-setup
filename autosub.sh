@@ -52,7 +52,6 @@ cp template/zel.params .
 
 # Modify the 'output' line in the .params file
 sed -i -e "s|^OutputDir.*|OutputDir\t\t\t\t./output/${current_date}:${attempt}/|" zel.params
-echo "1"
 
 # Copy run.sh from the template folder
 if [ ! -f ./template/run.sh ]; then
@@ -63,8 +62,8 @@ fi
 cp ./template/run.sh .
 
 # Modify the '#SBATCH --output=...' line in the run.sh file
-sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}|" run.sh
-echo "2"
-sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}|" run.sh
+sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
+sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
 echo "Modifications completed successfully."
 
+sbatch run.sh
