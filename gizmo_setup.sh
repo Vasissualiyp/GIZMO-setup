@@ -6,7 +6,7 @@ cd gizmo
 sed -i '/^[^#]/ s/^/#/' Makefile.systype
 sed -i '29s/^.//' Makefile.systype
 
-cp cooling/TREECOOL ../TREECOOL
+cp TREECOOL ../TREECOOL
 
 # Step 3: Create Config.sh
 echo "HYDRO_MESHLESS_FINITE_MASS" > Config.sh
