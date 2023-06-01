@@ -2,7 +2,7 @@
 
 # Ask for the name to be used in the output file
 #read -p "Enter the name: " name
-name="64_conv"
+name="starqtest"
 
 systemname=$(hostname)
 
@@ -56,7 +56,11 @@ cp template/zel.params .
 # Modify the 'output' line in the .params file
 sed -i -e "s|^OutputDir.*|OutputDir\t\t\t\t./output/${current_date}:${attempt}/|" zel.params
 
-if [ "$systemname" = "nia-login02.scinet.local" ]; then
+echo "The host name is $systemname"
+
+#if [ "$systemname" = "nia-login02.scinet.local" ]; then
+if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+
 
 	# Copy run.sh from the template folder
 	if [ ! -f ./template/run.sh ]; then
@@ -73,5 +77,18 @@ if [ "$systemname" = "nia-login02.scinet.local" ]; then
 
 	sbatch run.sh
 else
-	echo "The host name is $systemname"
+	# Copy run.sh from the template folder
+	if [ ! -f ./template/runricky.sh ]; then
+	    echo "runricky.sh not found in the template folder."
+	    exit 1
+	fi
+
+	cp ./template/runricky.sh ./run.sh
+
+	# Modify the '#PBS --output=...' line in the run.sh file
+	#sed -i -e "s|^#PBS -o test|#PBS -o output/${name}_${current_date}:${attempt}|" run.sh
+	##sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
+	echo "Modifications completed successfully."
+
+	#qsub run.sh
 fi
