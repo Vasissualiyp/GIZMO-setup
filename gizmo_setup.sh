@@ -61,7 +61,7 @@ elif [ "$systemname" == "starq" ]; then
 	mv "$temp_file_path" "$makefile_path"
 fi
 
-cp TREECOOL ../TREECOOL
+cp ./cooling/TREECOOL ../TREECOOL
 
 # Step 3: Create Config.sh
 echo "HYDRO_MESHLESS_FINITE_MASS" > Config.sh

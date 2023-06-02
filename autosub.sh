@@ -92,5 +92,5 @@ else
 	sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
 	echo "Modifications completed successfully."
 
-	qsub run.sh
+#	qsub run.sh
 fi
