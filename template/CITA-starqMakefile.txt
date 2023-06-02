@@ -17,13 +17,14 @@ MPICHLIB =
 HDF5INCL =  -I/cita/modules/hdf5/1.12.1-ucx/include -DH5_USE_16_API
 HDF5LIB  =  -L/cita/modules/hdf5/1.12.1-ucx/lib -lhdf5 -lz
 OPT     += -DUSE_MPI_IN_PLACE -DHDF5_DISABLE_VERSION_CHECK
-## Notes [Fergus Horrobin]:
+## Notes [Vasilii Pustovoit]:
 ##
-## The module system was updated in February 2022 on all CITA systems. The new modules that should be loaded are:
+## The module system was updated in May 2023 only for starq CITA queue. The new modules that should be loaded are:
 ##    module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx
 
-## The above settings and modules should work equally well on all the upgraded workstations as well as on Sunnyvale.
-## The module system was just updated so this has not been tested in detail yet but seems to work as well or a bit
-## better than it did with the old modules on a few test problems.
+## Neccessary edits: your run.sh file (job submission script) should include the compilation of gizmo (the code should 
+## NOT be compiled on kingcrab/lobster/ricky etc.)
+## Your .params file contain MaxMemsize to 7500 (otherwise the code grabs a lot of threads)
+
 endif
 

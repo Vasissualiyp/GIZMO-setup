@@ -70,25 +70,27 @@ if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
 
 	cp ./template/run.sh .
 
-	# Modify the '#SBATCH --output=...' line in the run.sh file
+	# Modify the '#SBATCH --output=...' line in the run.sh file and .params file
 	sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
 	sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
+	sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t3500|" zel.params
 	echo "Modifications completed successfully."
 
 	sbatch run.sh
 else
 	# Copy run.sh from the template folder
-	if [ ! -f ./template/runricky.sh ]; then
-	    echo "runricky.sh not found in the template folder."
+	if [ ! -f ./template/run-starq.sh ]; then
+	    echo "run-starq.sh not found in the template folder."
 	    exit 1
 	fi
 
-	cp ./template/runricky.sh ./run.sh
+	cp ./template/run-starq.sh ./run.sh
 
-	# Modify the '#PBS --output=...' line in the run.sh file
+	# Modify the '#PBS --output=...' line in the run.sh file and .params file
 	#sed -i -e "s|^#PBS -o test|#PBS -o output/${name}_${current_date}:${attempt}|" run.sh
 	##sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
+	sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
 	echo "Modifications completed successfully."
 
-	#qsub run.sh
+	qsub run.sh
 fi

@@ -22,10 +22,10 @@ Omega_Lambda                       0
 Omega_Baryon                       1
 HubbleParam                        1
 BoxSize                            64000
-%TimeOfFirstSnapshot                0.00990099
-OutputListOn			   1
-OutputListFilename		   snapshot_times.txt
-#ScaleFac_Between_Snapshots         1.05
+TimeOfFirstSnapshot                0.00990099
+%OutputListOn			   1
+%OutputListFilename		   snapshot_times.txt
+ScaleFac_Between_Snapshots         1.05
 MaxSizeTimestep                    0.01
 DesNumNgb                          32
 UnitLength_in_cm                   3.085678e+21
@@ -46,7 +46,7 @@ Softening_Type5_MaxPhysLimit       0
 MinGasTemp                         0.001
 
 
-MaxMemsize			   3500
+MaxMemsize			   7500
 
 % -- optional numerical parameters (requires additional Config flags)
 CourantFac                         0.2
