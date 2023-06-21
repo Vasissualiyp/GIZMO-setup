@@ -20,3 +20,7 @@ For instance, search for output/2023/12/24:1/ gives the 1st attempt on Dec 24th,
 ## snapshottimes_generator.py
 
 This python code will generate the snapshot times for increasing frequency (i.e. 1, 2, 2.5, 2.75, 2.875 etc.)
+
+## zeldovich_ics_gen
+
+This is my attempt at generating hdf5 GIZMO ics from scratch. It works in python and I tried doing it in cpp.
