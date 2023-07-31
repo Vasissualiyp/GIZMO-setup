@@ -2,7 +2,15 @@
 
 # Ask for the name to be used in the output file
 #read -p "Enter the name: " name
-name="starqtest"
+#name="MUSIC_test_DM_sbcType"
+
+# Read the first line of the file
+first_line=$(head -n 1 ./template/zel.params)
+
+# Use parameter expansion to remove unwanted parts of the string
+name="${first_line#*: }" # this will remove everything up to and including ': '
+
+echo "The name of the job is $name"
 
 systemname=$(hostname)
 
@@ -24,7 +32,7 @@ if [ -e zel.params ]; then
 
     # Check if the date in the OutputDir directory matches today's date
     today=$(date '+%Y.%m.%d')
-    echo "${date_part}"
+    #echo "${date_part}"
     if [ "$date_part" = "$today" ]; then
         # Extract the number and remove the "/" symbol
         number=$(echo "$line" | awk '{print $2}' | awk -F: '{print $NF}' | tr -d '/')
@@ -56,7 +64,7 @@ cp template/zel.params .
 # Modify the 'output' line in the .params file
 sed -i -e "s|^OutputDir.*|OutputDir\t\t\t\t./output/${current_date}:${attempt}/|" zel.params
 
-echo "The host name is $systemname"
+#echo "The host name is $systemname"
 
 #if [ "$systemname" = "nia-login02.scinet.local" ]; then
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
