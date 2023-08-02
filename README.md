@@ -1,26 +1,21 @@
-This suite is used to automatically setup gizmo on Niagara and Sunnyvale clusters.
+# README.md
 
-## gizmo_setup.sh
+## GIZMO Setup Scripts
 
-This bash script will clone the private bitbucket GIZMO repo and edit Makefile and Makefile.sys appropriately. You don't have to edit those now.
-The Makefile edit also allows gizmo to run on starq.
+This repository contains scripts for setting up and running GIZMO simulations. The scripts automate the process of configuring GIZMO, submitting jobs to clusters, and generating initial conditions (ICs) for a Zel'dovich pancake simulation.
 
-It will then copy TREECOOL into the working directory. It also will create the Config.sh file with most widely usef flags and then open Config.sh in vim.
+### Setup Scripts
 
-## autosub.sh
+The `gizmo_setup.sh` script automates the process of cloning the GIZMO repository, configuring the Makefile for different clusters (Niagara or Starq), creating a Config.sh file, and copying the TREECOOL file.
 
-This script automatically will name the parameters file and job submission scripts and copy them to the working directory. 
-It will also automatically determine and accordingly edit these files to work with Niagara/starq.
+### Submission Scripts
 
-If you wish to edit the job submission script/parameters file, edit them in the template folder. run.sh is for Niagara, run-starq.sh is for starq.
+The `autosub.sh` script automates the process of setting up and submitting a job to a cluster. It extracts the job name from the `zel.params` file, determines the host system, creates a unique output directory based on the current date and an attempt number, and modifies the run script to reflect these changes. Finally, it submits the job to the host system's job scheduler.
 
-The autosub script then submits the jobs. The results will be located at the output/ folder, with the current date and attempt in the folder's name.
-For instance, search for output/2023/12/24:1/ gives the 1st attempt on Dec 24th, 2023.
+### Initial Condition Scripts
 
-## snapshottimes_generator.py
+The `snapshottimes_generator.py` script generates a geometric sequence of snapshot times between a start time and an end time, and writes these times to a `snapshot_times.txt` file.
 
-This python code will generate the snapshot times for increasing frequency (i.e. 1, 2, 2.5, 2.75, 2.875 etc.)
+The `zeldovich_ics_gen/hdf5zelgenglass.py` script generates 3D initial conditions (ICs) for a Zel'dovich pancake simulation, and writes these ICs to an HDF5 file.
 
-## zeldovich_ics_gen
-
-This is my attempt at generating hdf5 GIZMO ics from scratch. It works in python and I tried doing it in cpp.
+To run these scripts, navigate to the directory containing the scripts and execute them. Note that the scripts may need to be modified to suit your specific simulation setup and computing environment.
