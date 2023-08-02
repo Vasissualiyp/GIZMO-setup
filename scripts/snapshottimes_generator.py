@@ -13,7 +13,7 @@ times = np.logspace(np.log10(t1), np.log10(t2), n)
 print(times)
 
 # write the snapshot times to a file
-filename = "snapshot_times.txt"
+filename = "../snapshot_times.txt"
 with open(filename, 'w') as f:
 	for t in times:
 		f.write(str(t) + "\n")

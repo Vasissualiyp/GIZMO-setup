@@ -2,6 +2,9 @@
 
 systemname=$(hostname)
 
+# Move out of the scripts directory
+cd ..
+
 #Step 1: Clone the repository
 git clone git@bitbucket.org:phopkins/gizmo.git
 
