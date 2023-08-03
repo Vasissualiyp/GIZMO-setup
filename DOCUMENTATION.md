@@ -33,6 +33,48 @@ The `autosub.sh` script automates the process of setting up and submitting a job
 6. Depending on the host system (Niagara or Starq), it copies the corresponding run script (`run.sh` for Niagara or `run-starq.sh` for Starq) from the `template` directory to the current directory. It then modifies the output directory and job name in the run script to reflect the current date, attempt number, and job name.
 7. Finally, it submits the job to the host system's job scheduler.
 
+### Job Management Script
+
+This script is designed to streamline job management on clusters that use either the Slurm or Torque/PBS job schedulers. The script determines the appropriate command to use (`squeue` for Slurm or `qstat` for Torque/PBS) based on the hostname of the system. 
+
+#### Usage
+
+To run the script, simply execute it in your terminal:
+
+```bash
+./job_management.sh
+```
+
+The script will display a list of your current jobs, including their job IDs and runtimes. Each job will be numbered with an index. 
+
+```
+Here are your currently running jobs:
+1: 12345 0:10:00
+2: 12346 0:20:00
+3: 12347 0:30:00
+...
+```
+
+You will then be prompted to enter the indices of the jobs you wish to cancel:
+
+```
+Enter the indices of jobs you want to cancel (e.g. 1,3-5):
+```
+
+Enter the indices of the jobs you want to cancel, separating individual indices with commas and specifying ranges with a dash. For example:
+
+* To cancel the first job, enter: `1`
+* To cancel the first and third jobs, enter: `1,3`
+* To cancel the first through fourth jobs, enter: `1-4`
+* To cancel the first job and third through fifth jobs, enter: `1,3-5`
+
+#### Notes
+
+* The indices are 1-based (the first job is 1). 
+* Please be careful when using this script and double-check the jobs you're about to cancel before confirming. 
+* This script should be tested in a safe environment before being used in a production environment. 
+* Make sure the path to `bash` in the shebang (`#!/bin/bash`) at the top of the script matches the path on your systems.
+
 ### Initial Condition Scripts
 
 #### snapshottimes_generator.py

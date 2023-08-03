@@ -12,6 +12,15 @@ The `gizmo_setup.sh` script automates the process of cloning the GIZMO repositor
 
 The `autosub.sh` script automates the process of setting up and submitting a job to a cluster. It extracts the job name from the `zel.params` file, determines the host system, creates a unique output directory based on the current date and an attempt number, and modifies the run script to reflect these changes. Finally, it submits the job to the host system's job scheduler.
 
+### Job Management Script
+This script allows you to quickly view and cancel running jobs on a cluster using either the `squeue` or `qstat` commands, depending on the host system. It simplifies job management by providing a list of your current jobs with their IDs and runtimes, and lets you easily specify which jobs you want to cancel by their indices.
+
+To run the script, simply execute it in your terminal:
+
+```bash
+./job_management.sh
+```
+
 ### Initial Condition Scripts
 
 The `snapshottimes_generator.py` script generates a geometric sequence of snapshot times between a start time and an end time, and writes these times to a `snapshot_times.txt` file.
