@@ -50,12 +50,11 @@ compile_and_submit() { #{{{
   make clean
   make -j10
   cd ..
-  ./autosub.sh
+  ./autosub2.sh
 }
 #}}}
 
 configs=(
-  "MULTIPLEDOMAINS=16 OPENMP=4"
   "MULTIPLEDOMAINS=32"
   "MULTIPLEDOMAINS=64"
 )
@@ -63,7 +62,7 @@ configs=(
 # Main run {{{
 for config in "${configs[@]}"; do
   update_config $config
-  #compile_and_submit
+  compile_and_submit
   echo "$config"
 done
 #}}}

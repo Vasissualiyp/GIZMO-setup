@@ -1,104 +1,105 @@
 #!/bin/bash
 
-# Ask for the name to be used in the output file
-#read -p "Enter the name: " name
-#name="MUSIC_test_DM_sbcType"
+get_name() { #{{{
+    first_line=$(head -n 1 ./template/zel.params)
+    name="${first_line#*: }"
+    echo "The name of the job is $name"
+}
+#}}}
 
-# Read the first line of the file
-first_line=$(head -n 1 ./template/zel.params)
+get_date_time() { #{{{
+    current_date=$(date +"%Y.%m.%d")
+    current_time=$(date +"%H%M")
+}
+#}}}
 
-# Use parameter expansion to remove unwanted parts of the string
-name="${first_line#*: }" # this will remove everything up to and including ': '
-
-echo "The name of the job is $name"
-
-systemname=$(hostname)
-
-# Get current date and time
-current_date=$(date +"%Y.%m.%d")
-current_time=$(date +"%H%M")
-
-
-# Getting the attempt number
-
-# Check if the zel.params file exists
-if [ -e zel.params ]; then
-    # Read the line from the file
-    line=$(grep "OutputDir" zel.params)
-
-    # Extract the date part
-    date_part=$(echo "$line" | awk '{print $2}' | cut -d '/' -f 3)
-    date_part=$(echo "$date_part" | cut -d ':' -f 1)
-
-    # Check if the date in the OutputDir directory matches today's date
-    today=$(date '+%Y.%m.%d')
-    #echo "${date_part}"
-    if [ "$date_part" = "$today" ]; then
-        # Extract the number and remove the "/" symbol
-        number=$(echo "$line" | awk '{print $2}' | awk -F: '{print $NF}' | tr -d '/')
-
-        # Assign the value to the 'attempt' variable
-        attempt=$number
-
-        # Print the value of the 'attempt' variable
-        #echo "Attempt: $attempt"
+get_attempt() { #{{{
+    if [ -e zel.params ]; then
+        line=$(grep "OutputDir" zel.params)
+        date_part=$(echo "$line" | awk '{print $2}' | cut -d '/' -f 3)
+        date_part=$(echo "$date_part" | cut -d ':' -f 1)
+        today=$(date '+%Y.%m.%d')
+        if [ "$date_part" = "$today" ]; then
+            number=$(echo "$line" | awk '{print $2}' | awk -F: '{print $NF}' | tr -d '/')
+            attempt=$number
+        else
+            attempt=0
+        fi
     else
-        #echo "The date in the OutputDir directory does not match today's date."
-	attempt=0
+        attempt=0
     fi
-else
-    attempt=0
-fi
-attempt=$((attempt+1))
-#echo "Attempt: $attempt"
+    attempt=$((attempt+1))
+}
+#}}}
 
-# Copy .params file from template folder
-params_file=$(find ./template/ -type f -name "*.params" -print -quit)
-if [ -z "$params_file" ]; then
-    echo "No .params file found in the template folder."
-    exit 1
-fi
+copy_and_modify_params() { #{{{
+    params_file=$(find ./template/ -type f -name "*.params" -print -quit)
+    if [ -z "$params_file" ]; then
+        echo "No .params file found in the template folder."
+        exit 1
+    fi
 
-cp template/zel.params .
+    cp template/zel.params .
 
-# Modify the 'output' line in the .params file
-sed -i -e "s|^OutputDir.*|OutputDir\t\t\t\t./output/${current_date}:${attempt}/|" zel.params
+    # Modify the 'output' line in the .params file
+    sed -i -e "s|^OutputDir.*|OutputDir\t\t\t\t./output/${current_date}:${attempt}/|" zel.params
+}
+#}}}
 
-#echo "The host name is $systemname"
+modify_and_submit_job() { #{{{
+    systemname=$(hostname)
+    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+        cp ./template/run.sh .
+        sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
+        sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
+        sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
+        echo "Modifications completed successfully."
+        sbatch run.sh
+    else
+        cp ./template/run-starq.sh ./run.sh
+        sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
+        echo "Modifications completed successfully."
+        qsub run.sh
+    fi
+}
+#}}}
 
-#if [ "$systemname" = "nia-login02.scinet.local" ]; then
-if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+track_changes() { #{{{
+    archive_folder="./archive"
+    last_job_folder="./last_job"
+    current_date=$(date +"%Y-%m-%d")
+    archive_file="${archive_folder}/${current_date}.txt"
 
+    # Ensure archive and last job folders exist
+    mkdir -p "$archive_folder" "$last_job_folder"
 
-	# Copy run.sh from the template folder
-	if [ ! -f ./template/run.sh ]; then
-	    echo "run.sh not found in the template folder."
-	    exit 1
-	fi
+    # Files to compare
+    files_to_compare=("./gizmo/Config.sh" "./template/zel.params")
 
-	cp ./template/run.sh .
+    for file in "${files_to_compare[@]}"; do
+        last_job_file="${last_job_folder}/$(basename $file)"
+        
+        if [ -f "$last_job_file" ]; then
+            echo "Changes for $file:" >> "$archive_file"
+            # Compare and log additions, edits, and removals
+            comm -3 <(sort "$file") <(sort "$last_job_file") | awk '
+                /^(\t\t)/ { print "Added:", $2 }
+                /^(\t)/   { print "Removed:", $1 }
+                !/^(\t)/ && !/^(\t\t)/ { print "Edited:", $0 }
+            ' >> "$archive_file"
+            echo "" >> "$archive_file" # Adding a new line for separation
+        fi
 
-	# Modify the '#SBATCH --output=...' line in the run.sh file and .params file
-	sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
-	sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-	sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t3500|" zel.params
-	echo "Modifications completed successfully."
+        # Copy the current file to the last job folder
+        cp "$file" "$last_job_file"
+    done
+}
+#}}}
 
-	sbatch run.sh
-else
-	# Copy run.sh from the template folder
-	if [ ! -f ./template/run-starq.sh ]; then
-	    echo "run-starq.sh not found in the template folder."
-	    exit 1
-	fi
-
-	cp ./template/run-starq.sh ./run.sh
-
-	# Modify the '#PBS --output=...' line in the run.sh file and .params file
-	#sed -i -e "s|^#PBS -o test|#PBS -o output/${name}_${current_date}:${attempt}|" run.sh
-	##sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-	sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
-	echo "Modifications completed successfully."
-
-#	qsub run.sh
-fi
+# Main part of the script
+get_name
+get_date_time
+get_attempt
+copy_and_modify_params
+modify_and_submit_job
+track_changes
