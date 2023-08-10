@@ -64,35 +64,57 @@ modify_and_submit_job() { #{{{
 }
 #}}}
 
-track_changes() { #{{{
+write_job_id() { #{{{
     archive_folder="./archive"
     last_job_folder="./last_job"
     current_date=$(date +"%Y-%m-%d")
     archive_file="${archive_folder}/${current_date}.txt"
+    job_id=$(squeue -u $USER --format=%i | tail -n +2 | sort -n | tail -n 1)
+    echo "Job ID: $job_id" >> "$archive_file"
+    echo "------------------------" >> "$archive_file"
+}
+#}}}
 
+track_changes() { #{{{
     # Ensure archive and last job folders exist
     mkdir -p "$archive_folder" "$last_job_folder"
 
     # Files to compare
     files_to_compare=("./gizmo/Config.sh" "./template/zel.params")
+    no_changes=true
+
+    write_job_id "$job_id" # Assuming job_id is set elsewhere in your script
 
     for file in "${files_to_compare[@]}"; do
         last_job_file="${last_job_folder}/$(basename $file)"
+        changes_detected=false
         
         if [ -f "$last_job_file" ]; then
-            echo "Changes for $file:" >> "$archive_file"
-            # Compare and log additions, edits, and removals
-            comm -3 <(sort "$file") <(sort "$last_job_file") | awk '
-                /^(\t\t)/ { print "Added:", $2 }
-                /^(\t)/   { print "Removed:", $1 }
-                !/^(\t)/ && !/^(\t\t)/ { print "Edited:", $0 }
-            ' >> "$archive_file"
-            echo "" >> "$archive_file" # Adding a new line for separation
+            # Detect changes and store in a temporary variable
+            changes=$(comm -3 <(sort "$file") <(sort "$last_job_file") | awk '
+                /^(\t\t)/ { changes_detected=true; print "Added:", $2 }
+                /^(\t)/   { changes_detected=true; print "Removed:", $1 }
+                !/^(\t)/ && !/^(\t\t)/ { changes_detected=true; print "Edited:", $1, "to", $2 }
+            ')
+
+            # If changes were detected, write to the archive file
+            if [ "$changes_detected" = true ]; then
+                echo "Changes for $file:" >> "$archive_file"
+                echo "$changes" >> "$archive_file"
+                no_changes=false
+            fi
         fi
 
         # Copy the current file to the last job folder
         cp "$file" "$last_job_file"
     done
+
+    # Add horizontal line if changes detected, or indicate no changes
+    if [ "$no_changes" = true ]; then
+        echo "No changes detected for this job." >> "$archive_file"
+    fi
+
+    echo "====================================" >> "$archive_file" # Horizontal line
 }
 #}}}
 
@@ -102,4 +124,5 @@ get_date_time
 get_attempt
 copy_and_modify_params
 modify_and_submit_job
+write_job_id
 track_changes

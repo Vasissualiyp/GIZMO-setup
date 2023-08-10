@@ -56,7 +56,7 @@ compile_and_submit() { #{{{
 
 configs=(
   "MULTIPLEDOMAINS=32"
-  "MULTIPLEDOMAINS=64"
+  "-MULTIPLEDOMAINS"
 )
 
 # Main run {{{
