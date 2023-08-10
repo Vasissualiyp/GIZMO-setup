@@ -50,7 +50,7 @@ compile_and_submit() { #{{{
   make clean
   make -j10
   cd ..
-  ./autosub2.sh
+  ./autosub.sh
 }
 #}}}
 
