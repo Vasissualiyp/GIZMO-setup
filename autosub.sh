@@ -76,29 +76,19 @@ write_job_id() { #{{{
 #}}}
 
 track_changes() { #{{{
-    # Ensure archive and last job folders exist
-    mkdir -p "$archive_folder" "$last_job_folder"
-
     # Files to compare
     files_to_compare=("./gizmo/Config.sh" "./template/zel.params")
     no_changes=true
-
-    write_job_id "$job_id" # Assuming job_id is set elsewhere in your script
 
     for file in "${files_to_compare[@]}"; do
         last_job_file="${last_job_folder}/$(basename $file)"
         changes_detected=false
         
         if [ -f "$last_job_file" ]; then
-            # Detect changes and store in a temporary variable
-            changes=$(comm -3 <(sort "$file") <(sort "$last_job_file") | awk '
-                /^(\t\t)/ { changes_detected=true; print "Added:", $2 }
-                /^(\t)/   { changes_detected=true; print "Removed:", $1 }
-                !/^(\t)/ && !/^(\t\t)/ { changes_detected=true; print "Edited:", $1, "to", $2 }
-            ')
-
-            # If changes were detected, write to the archive file
-            if [ "$changes_detected" = true ]; then
+            diff_output=$(diff "$last_job_file" "$file")
+            changes=$(echo "$diff_output" | awk '/^</ { print "Delete", $2, $3 } /^>/ { print "Add", $2, $3 }')
+            echo "$diff_output\n"
+            if [ -n "$changes" ]; then
                 echo "Changes for $file:" >> "$archive_file"
                 echo "$changes" >> "$archive_file"
                 no_changes=false
@@ -109,7 +99,6 @@ track_changes() { #{{{
         cp "$file" "$last_job_file"
     done
 
-    # Add horizontal line if changes detected, or indicate no changes
     if [ "$no_changes" = true ]; then
         echo "No changes detected for this job." >> "$archive_file"
     fi
