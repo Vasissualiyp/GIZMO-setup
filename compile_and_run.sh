@@ -1,6 +1,6 @@
 #!/bin/bash
 
-update_config() {
+update_config() { #{{{
   config_file="./gizmo/Config.sh"
 
   # Loop through all arguments given to the function
@@ -42,15 +42,28 @@ update_config() {
     fi
   done
 }
+#}}}
 
+compile_and_submit() { #{{{
+  cd gizmo
+  module load intel intelmpi gsl hdf5 fftw
+  make clean
+  make -j10
+  cd ..
+  ./autosub.sh
+}
+#}}}
 
-update_config MULTIPLEDOMAINS=32 HYDRO_MESHLESS_FINITE_MASS -OPENMP
-cd gizmo
+configs=(
+  "MULTIPLEDOMAINS=16 OPENMP=4"
+  "MULTIPLEDOMAINS=32"
+  "MULTIPLEDOMAINS=64"
+)
 
-module load intel intelmpi gsl hdf5 fftw
-
-#Compile and submit
-#make clean
-#make -j10
-#cd ..
-#./autosub.sh
+# Main run {{{
+for config in "${configs[@]}"; do
+  update_config $config
+  #compile_and_submit
+  echo "$config"
+done
+#}}}
