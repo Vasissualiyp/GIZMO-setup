@@ -6,7 +6,9 @@ This repository contains scripts for setting up and running GIZMO simulations. T
 
 ### Setup Scripts
 
-The `gizmo_setup.sh` script automates the process of cloning the GIZMO repository, configuring the Makefile for different clusters (Niagara or Starq), creating a Config.sh file, and copying the TREECOOL file.
+The `autosub.sh` script automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission.
+
+The `compile_and_run.sh` script streamlines the process of compiling and submitting tasks for execution. By incorporating configuration adjustments, it allows the user to automatically clean, compile with desired parameters, and submit tasks to the desired destination without manual intervention. The script offers efficiency and consistency, making it an essential tool for repetitive and complex build and submission procedures.
 
 ### Submission Scripts
 
