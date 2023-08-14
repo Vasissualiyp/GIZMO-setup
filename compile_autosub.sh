@@ -170,7 +170,7 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
-        echo "Modifications of the run.sh file and first modifications of zel.params file completed successfully."
+        echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
         sbatch run.sh
     else
         cp ./template/run-starq.sh ./run.sh
@@ -241,17 +241,21 @@ track_changes() { #{{{
 
 autosub() { #{{{
 	echo "Autosubmission..."
-	for ((i = 0; i < ${#params[@]}; i++)); do
-		echo "Step " "$i"
-		get_name
-		get_date_time
-		get_attempt
-		copy_and_modify_params
-		modify_params $i
-		modify_and_submit_job
-		write_job_id
-		track_changes
-	done
+	if [ ${#parameters[@]} -eq 0 ]; then
+		echo "No parameter changes found. bypassing the change of the parameters file..."
+	else
+		for ((i = 0; i < ${#parameters[@]}; i++)); do
+			echo "Step " "$i"
+			get_name
+			get_date_time
+			get_attempt
+			copy_and_modify_params
+			modify_params $i
+			modify_and_submit_job
+			write_job_id
+			track_changes
+		done
+	fi
 } #}}}
 #}}}
 
