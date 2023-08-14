@@ -15,15 +15,15 @@ extract_config() { #{{{
     # Check if the line starts with "zel.params:"
     elif [[ $line == "zel.params:"* ]]; then
       # Extract the part after "zel.params:" and add it to the parameters array
-      parameters+=("${line#zel.params: }") 
+      zel_parameters+=("${line#zel.params: }") 
     fi  
-  # Print the configs and parameters arrays to verify the result
-  #printf "Extracted configs:\n"
-  #printf "%s\n" "${configs[@]}"
-  #printf "\nExtracted parameters:\n"
-  #printf "%s\n" "${parameters[@]}"
-
   done < "configs.txt"
+  # Print the configs and parameters arrays to verify the result
+  printf "Extracted configs:\n"
+  printf "%s\n" "${configs[@]}"
+  printf "\nExtracted parameters:\n"
+  #printf "%s\n" "${parameters[@]}"
+  printf "%s\n" "${zel_parameters[@]}"
 }
 
 # Print the configs and parameters arrays to verify the result
@@ -68,6 +68,7 @@ update_zel_params() { #{{{
 update_softening_zel_params() { #{{{
   params_file="./template/zel.params"
   param_string="$1"
+  echo "Softening 1!"
 
   # Split the parameter string by spaces
   IFS=' ' read -ra parameters <<< "$param_string"
@@ -88,6 +89,7 @@ update_softening_zel_params() { #{{{
 
     # Check if the key is Softening_Type0
     if [[ "$key" == "Softening_Type0" ]]; then
+      echo "Softening 2!"
       # Change Softening_Type0_MaxPhysLimit to the same value
       sed -i "s/^\(Softening_Type0_MaxPhysLimit[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
       # Change Softening_Type1 and Softening_Type1_MaxPhysLimit to 10x the value
@@ -100,10 +102,12 @@ update_softening_zel_params() { #{{{
     if grep -q "^$key[[:space:]]" "$params_file"; then
       # If the key exists, update the line with the new value
       # Preserve comments at the end of the line
+      echo "Softening 3!"
       sed -i "s/^\($key[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
     else
       # If the key does not exist, append the parameter to the file
       echo "$key$value" >> "$params_file"
+      echo "Softening 4!"
     fi  
   done
 }
@@ -241,10 +245,12 @@ track_changes() { #{{{
 
 autosub() { #{{{
 	echo "Autosubmission..."
-	if [ ${#parameters[@]} -eq 0 ]; then
+	if [ ${#zel_parameters[@]} -eq 0 ]; then
 		echo "No parameter changes found. bypassing the change of the parameters file..."
 	else
-		for ((i = 0; i < ${#parameters[@]}; i++)); do
+		echo "The full parameters changes:"
+		echo "$zel_parameters"
+		for ((i = 0; i < ${#zel_parameters[@]}; i++)); do
 			echo "Step " "$i"
 			get_name
 			get_date_time
