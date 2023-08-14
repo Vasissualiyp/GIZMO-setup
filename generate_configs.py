@@ -5,16 +5,15 @@ parameters = {
     "Config.sh": [
         ("PMGRID", [16, 32]),
         ("MULTIPLEDOMAINS", [16, 32]),
-        ("OPENMP", [16, 32]),
     ],
     "zel.params": [
-        ("TimeBetSnapshots", [0.01, 0.02]),
+        ("TimeBetSnapshot", [0.01, 0.02]),
     ],
 }
 
 # Define parameters to remove only for the first run
 remove_first_run = {
-    #"Config.sh": ["OPENMP"], # Example of removal only for the first run
+    "Config.sh": ["OPENMP"], # Example of removal only for the first run
 }
 
 # Create an empty list to store the lines
