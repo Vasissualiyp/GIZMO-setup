@@ -2,6 +2,113 @@
 
 # Autosub {{{
 
+# Declare empty arrays to store the configs and parameters
+declare -a configs
+declare -a parameters
+
+extract_config() { #{{{
+  while IFS= read -r line; do
+    # Check if the line starts with "Config.sh:"
+    if [[ $line == "Config.sh:"* ]]; then
+      # Extract the part after "Config.sh:" and add it to the configs array
+      configs+=("${line#Config.sh: }") 
+    # Check if the line starts with "zel.params:"
+    elif [[ $line == "zel.params:"* ]]; then
+      # Extract the part after "zel.params:" and add it to the parameters array
+      parameters+=("${line#zel.params: }") 
+    fi  
+  # Print the configs and parameters arrays to verify the result
+  #printf "Extracted configs:\n"
+  #printf "%s\n" "${configs[@]}"
+  #printf "\nExtracted parameters:\n"
+  #printf "%s\n" "${parameters[@]}"
+
+  done < "configs.txt"
+}
+
+# Print the configs and parameters arrays to verify the result
+#printf "Extracted configs:\n"
+#printf "%s\n" "${configs[@]}"
+#}}}
+
+update_zel_params() { #{{{
+  params_file="./template/zel.params"
+  param_string="$1"
+
+  # Split the parameter string by spaces
+  IFS=' ' read -ra parameters <<< "$param_string"
+
+  # Loop through all the parameters
+  for parameter in "${parameters[@]}"; do
+    # Check if the parameter starts with a dash, indicating deletion
+    if [[ "$parameter" == -* ]]; then
+      # Extract the key and delete it from the file (ignoring comments)
+      key="${parameter#-}"
+      sed -i "/^$key[[:space:]]/d" "$params_file"
+      continue
+    fi
+
+    # Split the parameter into key and value
+    key="${parameter%=*}"
+    value="${parameter#*=}"
+
+    # Check if the key already exists in the file (ignoring comments)
+    if grep -q "^$key[[:space:]]" "$params_file"; then
+      # If the key exists, update the line with the new value
+      # Preserve comments at the end of the line
+      sed -i "s/^\($key[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
+    else
+      # If the key does not exist, append the parameter to the file
+      echo "$key$value" >> "$params_file"
+    fi
+  done
+}
+#}}}
+
+update_softening_zel_params() { #{{{
+  params_file="./template/zel.params"
+  param_string="$1"
+
+  # Split the parameter string by spaces
+  IFS=' ' read -ra parameters <<< "$param_string"
+
+  # Loop through all the parameters
+  for parameter in "${parameters[@]}"; do
+    # Check if the parameter starts with a dash, indicating deletion
+    if [[ "$parameter" == -* ]]; then
+      # Extract the key and delete it from the file (ignoring comments)
+      key="${parameter#-}"
+      sed -i "/^$key[[:space:]]/d" "$params_file"
+      continue
+    fi
+
+    # Split the parameter into key and value
+    key="${parameter%=*}"
+    value="${parameter#*=}"
+
+    # Check if the key is Softening_Type0
+    if [[ "$key" == "Softening_Type0" ]]; then
+      # Change Softening_Type0_MaxPhysLimit to the same value
+      sed -i "s/^\(Softening_Type0_MaxPhysLimit[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
+      # Change Softening_Type1 and Softening_Type1_MaxPhysLimit to 10x the value
+      type1_value=$(echo "10 * $value" | bc)
+      sed -i "s/^\(Softening_Type1[[:space:]]*\).*\(\s*%.*\)*$/\1$type1_value \2/" "$params_file"
+      sed -i "s/^\(Softening_Type1_MaxPhysLimit[[:space:]]*\).*\(\s*%.*\)*$/\1$type1_value \2/" "$params_file"
+    fi
+
+    # Check if the key already exists in the file (ignoring comments)
+    if grep -q "^$key[[:space:]]" "$params_file"; then
+      # If the key exists, update the line with the new value
+      # Preserve comments at the end of the line
+      sed -i "s/^\($key[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
+    else
+      # If the key does not exist, append the parameter to the file
+      echo "$key$value" >> "$params_file"
+    fi  
+  done
+}
+#}}}
+
 get_name() { #{{{
     first_line=$(head -n 1 ./template/zel.params)
     name="${first_line#*: }"
@@ -48,6 +155,14 @@ copy_and_modify_params() { #{{{
 }
 #}}}
 
+modify_params() { #{{{
+    index=$1
+    param_string="${params[$index]}"
+    update_softening_zel_params "$param_string"
+    echo "Modifications of zel.params completed successfully"
+}
+#}}}
+
 modify_and_submit_job() { #{{{
     systemname=$(hostname)
     if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
@@ -55,7 +170,7 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
-        echo "Modifications completed successfully."
+        echo "Modifications of the run.sh file and first modifications of zel.params file completed successfully."
         sbatch run.sh
     else
         cp ./template/run-starq.sh ./run.sh
@@ -125,13 +240,18 @@ track_changes() { #{{{
 #}}}
 
 autosub() { #{{{
-	get_name
-	get_date_time
-	get_attempt
-	copy_and_modify_params
-	modify_and_submit_job
-	write_job_id
-	track_changes
+	echo "Autosubmission..."
+	for ((i = 0; i < ${#params[@]}; i++)); do
+		echo "Step " "$i"
+		get_name
+		get_date_time
+		get_attempt
+		copy_and_modify_params
+		modify_params $i
+		modify_and_submit_job
+		write_job_id
+		track_changes
+	done
 } #}}}
 #}}}
 
@@ -191,30 +311,48 @@ compile_and_submit() { #{{{
 }
 #}}}
 
-configs=(
-  "PMGRID=32 -MULTIPLEDOMAINS"
-  "PMGRID=64"
-  "PMGRID=128"
-  "PMGRID=256"
-  "PMGRID=32 MULTIPLEDOMAINS=16"
-  "PMGRID=64"
-  "PMGRID=128"
-  "PMGRID=256"
-  "PMGRID=32 MULTIPLEDOMAINS=32"
-  "PMGRID=64"
-  "PMGRID=128"
-  "PMGRID=256"
-  "PMGRID=32 MULTIPLEDOMAINS=64"
-  "PMGRID=64"
-  "PMGRID=128"
-  "PMGRID=256"
-) 
+#{{{
+#configs=( 
+#  "-PMGRID -MULTIPLEDOMAINS"
+#  "MULTIPLEDOMAINS=16"
+#  "MULTIPLEDOMAINS=32"
+#  "MULTIPLEDOMAINS=64"
+#  "MULTIPLEDOMAINS=128"
+#  "MULTIPLEDOMAINS=256"
+#  "MULTIPLEDOMAINS=512"
+#) 
+#configs=(
+#  "PMGRID=32 -MULTIPLEDOMAINS"
+#  "PMGRID=64"
+#  "PMGRID=128"
+#  "PMGRID=256"
+#  "PMGRID=32 MULTIPLEDOMAINS=16"
+#  "PMGRID=64"
+#  "PMGRID=128"
+#  "PMGRID=256"
+#  "PMGRID=32 MULTIPLEDOMAINS=32"
+#  "PMGRID=64"
+#  "PMGRID=128"
+#  "PMGRID=256"
+#  "PMGRID=32 MULTIPLEDOMAINS=64"
+#  "PMGRID=64"
+#  "PMGRID=128"
+#  "PMGRID=256"
+#) 
+#}}}
 
 # Main run {{{
-for config in "${configs[@]}"; do
-  update_config $config
-  compile_and_submit
-  #echo "$config"
-done
+extract_config
+if [ ${#configs[@]} -eq 0 ]; then
+  echo "No configurations changes found. Bypassing compilation..."
+  autosub
+else
+  for config in "${configs[@]}"; do
+    echo "Compiling..."
+    update_config "$config"
+    compile_and_submit
+    #echo "$config"
+  done
+fi
 #}}}
 #}}}
