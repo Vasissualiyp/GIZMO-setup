@@ -55,10 +55,8 @@ compile_and_submit() { #{{{
 #}}}
 
 configs=(
-  "MULTIPLEDOMAINS=16"
-  "MULTIPLEDOMAINS=32"
-  "MULTIPLEDOMAINS=64"
-)
+  " "
+) 
 
 # Main run {{{
 for config in "${configs[@]}"; do

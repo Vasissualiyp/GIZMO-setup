@@ -104,6 +104,16 @@ track_changes() { #{{{
     fi
 
     echo "====================================" >> "$archive_file" # Horizontal line
+
+    # For the first attempt of the day, save the parameter files
+    if [ "$attempt" = 1 ]; then
+	params_archive_folder="$archive_folder/$current_date"
+	mkdir "$params_archive_folder"
+    fi
+    for file in "${files_to_compare[@]}"; do
+    	new_filename="$params_archive_folder/$attempt-$(basename $file)"
+    	cp "$file" "$new_filename" 
+    done
 }
 #}}}
 
