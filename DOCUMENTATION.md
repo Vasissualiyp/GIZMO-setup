@@ -1,4 +1,5 @@
 # DOCUMENTATION.md
+**This documentation is slightly outdated!**
 
 ## GIZMO Setup Scripts
 
