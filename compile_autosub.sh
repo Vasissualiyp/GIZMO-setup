@@ -26,9 +26,6 @@ extract_config() { #{{{
   printf "%s\n" "${zel_parameters[@]}"
 }
 
-# Print the configs and parameters arrays to verify the result
-#printf "Extracted configs:\n"
-#printf "%s\n" "${configs[@]}"
 #}}}
 
 update_zel_params() { #{{{
@@ -270,8 +267,12 @@ autosub() { #{{{
 update_config() { #{{{
   config_file="./gizmo/Config.sh"
 
-  # Loop through all arguments given to the function
-  for parameter in "$@"; do
+  # Convert all arguments into a single string
+  args="$@"
+
+  # Loop through all parameters separated by space
+  IFS=' ' read -ra parameters <<< "$args"
+  for parameter in "${parameters[@]}"; do
     # Check if the parameter starts with a dash, indicating deletion
     if [[ "$parameter" == -* ]]; then
       # Extract the key and delete it from the file
@@ -310,6 +311,7 @@ update_config() { #{{{
   done
 }
 #}}}
+
 
 compile_and_submit() { #{{{
   cd gizmo
