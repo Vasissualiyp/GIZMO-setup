@@ -161,8 +161,10 @@ copy_and_modify_params() { #{{{
 
 modify_params() { #{{{
     index=$1
-    param_string="${params[$index]}"
+    param_string="${zel_parameters[$index]}"
+    echo "param string, index: " "$params_string" "$index"
     update_softening_zel_params "$param_string"
+    #update_zel_params "$param_string"
     echo "Modifications of zel.params completed successfully"
 }
 #}}}
@@ -175,7 +177,7 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
-        sbatch run.sh
+        #sbatch run.sh
     else
         cp ./template/run-starq.sh ./run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
