@@ -66,9 +66,8 @@ update_zel_params() { #{{{
 #}}}
 
 update_softening_zel_params() { #{{{
-  params_file="./template/zel.params"
+  params_file="./zel.params"
   param_string="$1"
-  echo "Softening 1!"
 
   # Split the parameter string by spaces
   IFS=' ' read -ra parameters <<< "$param_string"
@@ -79,7 +78,7 @@ update_softening_zel_params() { #{{{
     if [[ "$parameter" == -* ]]; then
       # Extract the key and delete it from the file (ignoring comments)
       key="${parameter#-}"
-      sed -i "/^$key[[:space:]]/d" "$params_file"
+      sed -i "/^$key\([[:space:]]\+\).*$/d" "$params_file"
       continue
     fi
 
@@ -89,25 +88,22 @@ update_softening_zel_params() { #{{{
 
     # Check if the key is Softening_Type0
     if [[ "$key" == "Softening_Type0" ]]; then
-      echo "Softening 2!"
       # Change Softening_Type0_MaxPhysLimit to the same value
-      sed -i "s/^\(Softening_Type0_MaxPhysLimit[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
+      sed -i "s/^\(Softening_Type0_MaxPhysLimit\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$value \3/" "$params_file"
       # Change Softening_Type1 and Softening_Type1_MaxPhysLimit to 10x the value
       type1_value=$(echo "10 * $value" | bc)
-      sed -i "s/^\(Softening_Type1[[:space:]]*\).*\(\s*%.*\)*$/\1$type1_value \2/" "$params_file"
-      sed -i "s/^\(Softening_Type1_MaxPhysLimit[[:space:]]*\).*\(\s*%.*\)*$/\1$type1_value \2/" "$params_file"
+      sed -i "s/^\(Softening_Type1\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$type1_value \3/" "$params_file"
+      sed -i "s/^\(Softening_Type1_MaxPhysLimit\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$type1_value \3/" "$params_file"
     fi
 
     # Check if the key already exists in the file (ignoring comments)
-    if grep -q "^$key[[:space:]]" "$params_file"; then
+    if grep -q "^$key\([[:space:]]\+\).*\$" "$params_file"; then
       # If the key exists, update the line with the new value
       # Preserve comments at the end of the line
-      echo "Softening 3!"
-      sed -i "s/^\($key[[:space:]]*\).*\(\s*%.*\)*$/\1$value \2/" "$params_file"
+      sed -i "s/^\($key\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$value \3/" "$params_file"
     else
       # If the key does not exist, append the parameter to the file
       echo "$key$value" >> "$params_file"
-      echo "Softening 4!"
     fi  
   done
 }
@@ -177,7 +173,7 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
-        #sbatch run.sh
+        sbatch run.sh
     else
         cp ./template/run-starq.sh ./run.sh
         sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
