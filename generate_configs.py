@@ -2,13 +2,13 @@ import numpy as np
 from itertools import product
 
 # Define the parameters and their values
-generated_softenings = np.ones(5) * 1000 / 128
+generated_softenings = np.ones(3) * 1000 / 128
 for i in range(np.size(generated_softenings)):
-    generated_softenings[i] = generated_softenings[i] * 10**(-i)
+    generated_softenings[i] = generated_softenings[i] * 10**(-i-5)
 
 parameters = {
     "Config.sh": [
-        #("PMGRID", [16, 32]),
+        ("ADAPTIVE_GRAVSOFT_FORALL", [1, 3]),
         #("MULTIPLEDOMAINS", [16, 32]),
     ],
     "zel.params": [
@@ -19,7 +19,7 @@ parameters = {
 
 # Define parameters to remove only for the first run
 remove_first_run = {
-    "Config.sh": ["PMGRID", "MULTIPLEDOMAINS"], # Example of removal only for the first run
+    "Config.sh": [], # Example of removal only for the first run
 }
 
 # Create an empty list to store the lines

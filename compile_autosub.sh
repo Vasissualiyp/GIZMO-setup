@@ -66,7 +66,7 @@ update_zel_params() { #{{{
 #}}}
 
 update_softening_zel_params() { #{{{
-  params_file="./zel.params"
+  params_file="./template/zel.params"
   param_string="$1"
 
   # Split the parameter string by spaces
@@ -74,37 +74,39 @@ update_softening_zel_params() { #{{{
 
   # Loop through all the parameters
   for parameter in "${parameters[@]}"; do
-    # Check if the parameter starts with a dash, indicating deletion
-    if [[ "$parameter" == -* ]]; then
-      # Extract the key and delete it from the file (ignoring comments)
-      key="${parameter#-}"
-      sed -i "/^$key\([[:space:]]\+\).*$/d" "$params_file"
-      continue
-    fi
-
     # Split the parameter into key and value
     key="${parameter%=*}"
     value="${parameter#*=}"
 
-    # Check if the key is Softening_Type0
     if [[ "$key" == "Softening_Type0" ]]; then
-      # Change Softening_Type0_MaxPhysLimit to the same value
-      sed -i "s/^\(Softening_Type0_MaxPhysLimit\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$value \3/" "$params_file"
+      # Change Softening_Type0 and Softening_Type0_MaxPhysLimit to the provided value
+      sed -i "s/^\($key\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $value \2/" "$params_file"
+      sed -i "s/^\(Softening_Type0_MaxPhysLimit\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $value \2/" "$params_file"
       # Change Softening_Type1 and Softening_Type1_MaxPhysLimit to 10x the value
-      type1_value=$(echo "10 * $value" | bc)
-      sed -i "s/^\(Softening_Type1\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$type1_value \3/" "$params_file"
-      sed -i "s/^\(Softening_Type1_MaxPhysLimit\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$type1_value \3/" "$params_file"
+      #type1_value=$(echo "10 * $value" | bc)
+      type1_value=$(awk "BEGIN {print $value * 10}")
+      sed -i "s/^\(Softening_Type1\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $type1_value \2/" "$params_file"
+      sed -i "s/^\(Softening_Type1_MaxPhysLimit\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $type1_value \2/" "$params_file"
+      continue
+    fi
+
+    # Check if the parameter starts with a dash, indicating deletion
+    if [[ "$parameter" == -* ]]; then
+      # Extract the key and delete it from the file (ignoring comments)
+      key="${parameter#-}"
+      sed -i "/^$key[[:space:]]\+/d" "$params_file"
+      continue
     fi
 
     # Check if the key already exists in the file (ignoring comments)
-    if grep -q "^$key\([[:space:]]\+\).*\$" "$params_file"; then
+    if grep -q "^$key[[:space:]]\+" "$params_file"; then
       # If the key exists, update the line with the new value
       # Preserve comments at the end of the line
-      sed -i "s/^\($key\)\([[:space:]]\+\).*\(\s*%.*\)*$/\1\2$value \3/" "$params_file"
+      sed -i "s/^\($key\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $value \2/" "$params_file"
     else
       # If the key does not exist, append the parameter to the file
       echo "$key$value" >> "$params_file"
-    fi  
+    fi
   done
 }
 #}}}
@@ -317,36 +319,6 @@ compile_and_submit() { #{{{
   cd ..
   autosub
 }
-#}}}
-
-#{{{
-#configs=( 
-#  "-PMGRID -MULTIPLEDOMAINS"
-#  "MULTIPLEDOMAINS=16"
-#  "MULTIPLEDOMAINS=32"
-#  "MULTIPLEDOMAINS=64"
-#  "MULTIPLEDOMAINS=128"
-#  "MULTIPLEDOMAINS=256"
-#  "MULTIPLEDOMAINS=512"
-#) 
-#configs=(
-#  "PMGRID=32 -MULTIPLEDOMAINS"
-#  "PMGRID=64"
-#  "PMGRID=128"
-#  "PMGRID=256"
-#  "PMGRID=32 MULTIPLEDOMAINS=16"
-#  "PMGRID=64"
-#  "PMGRID=128"
-#  "PMGRID=256"
-#  "PMGRID=32 MULTIPLEDOMAINS=32"
-#  "PMGRID=64"
-#  "PMGRID=128"
-#  "PMGRID=256"
-#  "PMGRID=32 MULTIPLEDOMAINS=64"
-#  "PMGRID=64"
-#  "PMGRID=128"
-#  "PMGRID=256"
-#) 
 #}}}
 
 # Main run {{{
