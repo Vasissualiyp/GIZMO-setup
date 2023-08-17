@@ -6,6 +6,9 @@ TODAY=$(date +"%Y-%m-%d")
 # Remove directories matching the pattern
 rm -f -r ./archive/${TODAY}*
 
+rm -f -r ./output/${TODAY}*
+rm -f  ./output/DM+Baryons_${TODAY}*
+
 # Subtract a day from today's date
 YESTERDAY=$(date -d "${TODAY} -1 day" +"%Y.%m.%d")
 
