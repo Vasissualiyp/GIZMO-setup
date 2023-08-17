@@ -7,6 +7,9 @@
 #include <filesystem>
 #include <map>
 
+// Compile the code with:
+// g++ -std=c++17 runtime_check.cpp -o runtime_check -lstdc++fs
+
 // Function to read the last 100 lines of a file
 std::string read_last_lines(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);
@@ -28,7 +31,7 @@ std::string read_last_lines(const std::filesystem::path& path) {
 // Function to process a single file
 void process_file(const std::filesystem::path& path, std::map<int, std::string>& results) {
     std::string filename = path.filename().string();
-    std::regex attempt_regex(R"(DM\+Baryons_2023\.08\.15:(\d+))");
+    std::regex attempt_regex(R"(DM\+Baryons_2023\.08\.17:(\d+))");
     std::smatch attempt_match;
     if (std::regex_search(filename, attempt_match, attempt_regex) && attempt_match.size() > 1) {
         int attempt = std::stoi(attempt_match.str(1));
