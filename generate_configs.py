@@ -1,18 +1,29 @@
 import numpy as np
 from itertools import product
 
-# Define the parameters and their values
-generated_softenings = np.ones(3) * 1000 / 128
-for i in range(np.size(generated_softenings)):
-    generated_softenings[i] = generated_softenings[i] * 10**(-i-5)
 
+generated_softenings = np.ones(5) * 8 # since 1000/128 ~ 2^3
+for i in range(np.size(generated_softenings)):
+    generated_softenings[i] = generated_softenings[i] * 10**(-i-7)
+generated_memory = [3500, 3800, 4000, 15000, 30000]
+
+
+powers_of_2 = np.ones(3) * 16
+for i in range(np.size(powers_of_2)):
+    powers_of_2[i] =  powers_of_2[i] * 2**i
+powers_of_2 = powers_of_2.astype(int)
+
+
+# Define the parameters and their values
 parameters = {
     "Config.sh": [
-        ("ADAPTIVE_GRAVSOFT_FORALL", [1, 3]),
-        #("MULTIPLEDOMAINS", [16, 32]),
+        #("ADAPTIVE_GRAVSOFT_FORALL", [2, 3]),
+        ("MULTIPLEDOMAINS", ['-', 4, 8, 16, 32, 64, 128, 256]),
+        #("PMGRID", 4*powers_of_2),
     ],
     "zel.params": [
-        ("Softening_Type0", generated_softenings.tolist()), # Convert to Python list
+        #("Softening_Type0", generated_softenings.tolist()), # Convert to Python list
+        ("MaxMemSize", generated_memory), # Convert to Python list
     ],
 }
 
@@ -55,4 +66,3 @@ with open("configs.txt", "w") as file:
     file.write("\n".join(lines))
 
 print("configs.txt file generated successfully!")
-

@@ -8,6 +8,7 @@ echo -e "\033[1B"
 
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
 	while true; do
+		#clear
                 # Collect command output to a variable
                 output=$(sqc -u $USER)
                 # Calculate number of lines in the output

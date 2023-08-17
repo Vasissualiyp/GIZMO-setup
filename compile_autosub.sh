@@ -99,10 +99,11 @@ update_softening_zel_params() { #{{{
     if grep -q "^$key[[:space:]]\+" "$params_file"; then
       # If the key exists, update the line with the new value
       # Preserve comments at the end of the line
-      sed -i "s/^\($key\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $value \2/" "$params_file"
+      #sed -i "s/^\($key\)[[:space:]]\+.*\(\s*%.*\)*$/\1 $value \2/" "$params_file"
+      sed -i "s/^\($key\)\([[:space:]]\+\)[0-9]*\(\s*%.*\)*$/\1\2$value\3/" "$params_file"
     else
       # If the key does not exist, append the parameter to the file
-      echo "$key$value" >> "$params_file"
+      echo -e "$key\t\t\t$value" >> "$params_file"
     fi
   done
 }
@@ -170,7 +171,7 @@ modify_and_submit_job() { #{{{
         cp ./template/run.sh .
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-        sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t3500|" zel.params
+        #sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t3500|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
         sbatch run.sh
     else
@@ -244,11 +245,17 @@ autosub() { #{{{
 	#echo "Autosubmission..."
 	if [ ${#zel_parameters[@]} -eq 0 ]; then
 		echo "No parameter changes found. bypassing the change of the parameters file..."
+		get_name
+		get_date_time
+		get_attempt
+		copy_and_modify_params
+		modify_and_submit_job
+		write_job_id
+		track_changes
 	else
 		echo "The full parameters changes:"
 		echo "$zel_parameters"
 		for ((i = 0; i < ${#zel_parameters[@]}; i++)); do
-			echo "Step " "$i"
 			get_name
 			get_date_time
 			get_attempt
