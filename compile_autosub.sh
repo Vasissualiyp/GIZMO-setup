@@ -170,12 +170,12 @@ modify_and_submit_job() { #{{{
         cp ./template/run.sh .
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-        sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t30000|" zel.params
+        sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t3500|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
         sbatch run.sh
     else
         cp ./template/run-starq.sh ./run.sh
-        sed -i -e "s|^MaxMemsize*|MaxMemsize\t\t\t\t7500|" zel.params
+        sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t7500|" zel.params
         echo "Modifications completed successfully."
         qsub run.sh
     fi
@@ -316,8 +316,8 @@ update_config() { #{{{
 compile_and_submit() { #{{{
   cd gizmo
   module load intel intelmpi gsl hdf5 fftw
-  make clean
-  make -j10
+  make clean > /dev/null 
+  make -j10 > /dev/null
   cd ..
   autosub
 }
