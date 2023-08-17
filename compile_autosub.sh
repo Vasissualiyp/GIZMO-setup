@@ -111,7 +111,7 @@ update_softening_zel_params() { #{{{
 get_name() { #{{{
     first_line=$(head -n 1 ./template/zel.params)
     name="${first_line#*: }"
-    echo "The name of the job is $name"
+    #echo "The name of the job is $name"
 }
 #}}}
 
@@ -157,7 +157,7 @@ copy_and_modify_params() { #{{{
 modify_params() { #{{{
     index=$1
     param_string="${zel_parameters[$index]}"
-    echo "param string, index: " "$params_string" "$index"
+    #echo "param string, index: " "$params_string" "$index"
     update_softening_zel_params "$param_string"
     #update_zel_params "$param_string"
     echo "Modifications of zel.params completed successfully"
@@ -241,7 +241,7 @@ track_changes() { #{{{
 #}}}
 
 autosub() { #{{{
-	echo "Autosubmission..."
+	#echo "Autosubmission..."
 	if [ ${#zel_parameters[@]} -eq 0 ]; then
 		echo "No parameter changes found. bypassing the change of the parameters file..."
 	else
@@ -312,14 +312,12 @@ update_config() { #{{{
 }
 #}}}
 
-
-compile_and_submit() { #{{{
+compilation() { #{{{
   cd gizmo
   module load intel intelmpi gsl hdf5 fftw
   make clean > /dev/null 
   make -j10 > /dev/null
   cd ..
-  autosub
 }
 #}}}
 
@@ -332,7 +330,9 @@ else
   for config in "${configs[@]}"; do
     echo "Compiling..."
     update_config "$config"
-    compile_and_submit
+    compilation
+    echo "Compilation complete! Submitting the job..."
+    autosub
     #echo "$config"
   done
 fi
