@@ -2,12 +2,13 @@
 
 # Get today's date in YYYY-MM-DD format
 TODAY=$(date +"%Y-%m-%d")
+TODAYDOT=$(date +"%Y.%m.%d")
 
 # Remove directories matching the pattern
 rm -f -r ./archive/${TODAY}*
 
-rm -f -r ./output/${TODAY}*
-rm -f  ./output/DM+Baryons_${TODAY}*
+rm -f -r ./output/${TODAYDOT}*
+rm -f  ./output/DM+Baryons_${TODAYDOT}*
 
 # Subtract a day from today's date
 YESTERDAY=$(date -d "${TODAY} -1 day" +"%Y.%m.%d")
