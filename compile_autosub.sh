@@ -165,23 +165,68 @@ modify_params() { #{{{
 }
 #}}}
 
+#modify_and_submit_job() { #{{{
+#    systemname=$(hostname)
+#    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+#        cp ./template/run.sh .
+#        sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
+#        sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
+#        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
+#        echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
+#        sbatch run.sh
+#        echo "Submission complete. Continuing in a second..."
+#	sleep 1
+#    else
+#        cp ./template/run-starq.sh ./run.sh
+#        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t7500|" zel.params
+#        echo "Modifications completed successfully."
+#        qsub run.sh
+#    fi
+#}
+##}}}
+
 modify_and_submit_job() { #{{{
     systemname=$(hostname)
+    archive_dir="./archive/${current_date}/bin/${attempt}"
+
+    # Create the directory if it doesn't exist
+    mkdir -p "$archive_dir"
+
+    # Extract the mpirun command from the run.sh script
+    mpirun_command=$(grep -E '^mpirun ' run.sh)
+
+    # Extract all file paths from the mpirun command
+    file_paths=($(echo "$mpirun_command" | awk '{for (i=2; i<=NF; i++) print $i}'))
+
+    # Move the files to the archive directory and update the mpirun command
+    for file_path in "${file_paths[@]}"; do
+        if [ -f "$file_path" ]; then
+            mv "$file_path" "$archive_dir"
+            mpirun_command=${mpirun_command//$file_path/$archive_dir/$(basename $file_path)}
+        fi
+    done
+
+    # Update the run.sh script with the new mpirun command
+    sed -i "s|^mpirun .*|$mpirun_command|" run.sh
+
     if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
         cp ./template/run.sh .
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-        #sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t3500|" zel.params
+        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
         sbatch run.sh
+        echo "Submission complete. Continuing in a second..."
+        sleep 1
     else
         cp ./template/run-starq.sh ./run.sh
-        sed -i -e "s|^MaxMemSize*|MaxMemsize\t\t\t\t7500|" zel.params
+        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t7500|" zel.params
         echo "Modifications completed successfully."
         qsub run.sh
     fi
 }
 #}}}
+
 
 write_job_id() { #{{{
     archive_folder="./archive"
@@ -331,7 +376,7 @@ compilation() { #{{{
 # Main run {{{
 extract_config
 if [ ${#configs[@]} -eq 0 ]; then
-  echo "No configurations changes found. Bypassing compilation..."
+  echo "No configurations changes found. Submitting the job, bypassing compilation..."
   autosub
 else
   for config in "${configs[@]}"; do
