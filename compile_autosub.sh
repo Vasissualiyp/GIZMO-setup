@@ -204,6 +204,7 @@ modify_and_submit_job() { #{{{
         if [ -f "$file_path" ]; then
             cp "$file_path" "$bin_dir"
             mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
+            cp ./run.sh "$bin_dir"
         fi
     done
 
@@ -216,7 +217,7 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
-        sbatch run.sh
+        sbatch "$bin_dir"/run.sh
         echo "Submission complete. Continuing in a second..."
         sleep 1
     else
