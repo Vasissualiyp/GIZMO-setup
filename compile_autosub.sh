@@ -187,10 +187,11 @@ modify_params() { #{{{
 
 modify_and_submit_job() { #{{{
     systemname=$(hostname)
-    archive_dir="./archive/${current_date}/bin/${attempt}"
+    current_date=$(date +"%Y-%m-%d")
+    bin_dir="./archive/${current_date}/bin/${attempt}"
 
     # Create the directory if it doesn't exist
-    mkdir -p "$archive_dir"
+    mkdir -p "$bin_dir"
 
     # Extract the mpirun command from the run.sh script
     mpirun_command=$(grep -E '^mpirun ' run.sh)
@@ -201,8 +202,8 @@ modify_and_submit_job() { #{{{
     # Move the files to the archive directory and update the mpirun command
     for file_path in "${file_paths[@]}"; do
         if [ -f "$file_path" ]; then
-            mv "$file_path" "$archive_dir"
-            mpirun_command=${mpirun_command//$file_path/$archive_dir/$(basename $file_path)}
+            cp "$file_path" "$bin_dir"
+            mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
         fi
     done
 
@@ -226,7 +227,6 @@ modify_and_submit_job() { #{{{
     fi
 }
 #}}}
-
 
 write_job_id() { #{{{
     archive_folder="./archive"
