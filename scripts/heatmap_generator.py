@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_heatmap(parameters, attempt_range=None):
+def plot_heatmap(parameters, attempt_range=None, highlight_attempts=None):
     # Read the data lines from the file
     with open('./results.txt', 'r') as file:
         data_lines = [line.strip() for line in file.readlines()]
@@ -47,10 +47,15 @@ def plot_heatmap(parameters, attempt_range=None):
     plt.ylabel(param_names[0])
     plt.title('Runtime Heatmap')
 
-    # Add attempt numbers as text labels
+    # Add attempt numbers as text labels and highlight specified attempts
     for i in range(num_rows):
         for j in range(num_cols):
-            plt.text(j, i, str(min_attempt + i * num_cols + j), ha="center", va="center", color="w", fontsize=8)
+            attempt_number = min_attempt + i * num_cols + j
+            plt.text(j, i, str(attempt_number), ha="center", va="center", color="w", fontsize=8)
+            
+            # Highlight the specified attempts
+            if highlight_attempts and attempt_number in highlight_attempts:
+                plt.gca().add_patch(plt.Rectangle((j-0.5, i-0.5), 1, 1, fill=False, edgecolor='red'))
 
     # Save the plot as a .png file
     plt.savefig('heatmap.png')
@@ -61,16 +66,20 @@ def plot_heatmap(parameters, attempt_range=None):
 # Example usage
 """
 parameters = {
-    "MULTIPLEDOMAINS": [0, 4, 8, 16, 32, 64, 128, 256],
-    "MemSize": [3500,3800,4000,15000,30000]
-}
-"""
-parameters = {
     "MULTIPLEDOMAINS": [0, 4, 8, 16, 32, 64, 128, 256, 512, 1024],
     "MemSize": [30000, 60000, 100000, 150000, 180000, 200000]
 }
+"""
+parameters = {
+    "MULTIPLEDOMAINS": [0, 4, 8, 16, 32, 64, 128, 256],
+    "MemSize": [3500, 3800, 4000, 15000, 30000]
+}
 # Range of attempts to consider (inclusive)
-attempt_range = (41, 100)
+#attempt_range = (41, 100)
+attempt_range = (1, 40)
 
-plot_heatmap(parameters, attempt_range)
+# Attempts to highlight
+highlight_attempts = [30, 39, 40]
+
+plot_heatmap(parameters, attempt_range, highlight_attempts)
 
