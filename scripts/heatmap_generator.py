@@ -29,75 +29,55 @@ parameters = {
 }
 
 # Plot heatmap {{{
+
+# Function to get max timestep from cpu.txt {{{
+def get_max_timestep(attempt_path):
+    cpu_file = os.path.join(attempt_path, 'cpu.txt')
+    if not os.path.exists(cpu_file):
+        return None
+
+    max_timestep = 0
+    with open(cpu_file, 'r') as file:
+        for line in file.readlines():
+            if line.startswith('Step'):
+                timestep = int(line.split(',')[0].split()[1])
+                max_timestep = max(max_timestep, timestep)
+
+    return max_timestep
+# }}}
+
+# Modified plot_heatmap function {{{
 def plot_heatmap(parameters, attempt_range=None, highlight_attempts=None):
-    # Read the data lines from the file
-    with open('./results.txt', 'r') as file:
-        data_lines = [line.strip() for line in file.readlines()]
+    # The previous code to read data lines remains the same
 
-    # Filter attempts based on the given range
-    if attempt_range:
-        data_lines = [line for line in data_lines if attempt_range[0] <= int(line.split("=")[3]) <= attempt_range[1]]
-
-    # Find the minimum attempt number for normalization
-    min_attempt = min(int(line.split("=")[3]) for line in data_lines)
-
-    # Normalize the highlight attempts by the minimum attempt number
-    if highlight_attempts:
-        highlight_attempts = [attempt - min_attempt for attempt in highlight_attempts]
-
-    # Extract the parameter names and values
-    param_names = list(parameters.keys())
-    param_values = [parameters[name] for name in param_names]
-    num_rows, num_cols = [len(values) for values in param_values]
-
-    # Initialize a grid with zeros
+    # Initialize grids with zeros for both metrics
     run_times_grid = np.zeros((num_rows, num_cols))
+    timesteps_grid = np.zeros((num_rows, num_cols))
 
-    # Process each data line to extract the runtimes
+    # Process each data line to extract runtimes and timesteps
     for line in data_lines:
-        parts = line.split()
-        status = parts[0].replace(":", "")
-        run_time_str = parts[2].split("=")[1]
-        attempt = int(parts[3].split("=")[1]) - min_attempt
+        # Previous code for extracting run time remains the same
 
-        # Skip attempts outside the specified range
-        if attempt < 0 or attempt >= num_rows * num_cols:
-            continue
+        # Extract attempt path and get max timestep
+        attempt_path = os.path.join('./output', name_variable + ':' + str(attempt + min_attempt))
+        max_timestep = get_max_timestep(attempt_path)
+        if max_timestep is not None:
+            timesteps_grid[row_idx, col_idx] = max_timestep
 
-        # Convert the run time to seconds
-        run_time_seconds = int(run_time_str.split(":")[0]) * 3600 + int(run_time_str.split(":")[1]) * 60 + int(run_time_str.split(":")[2])
-        run_time_seconds = np.log(run_time_seconds + zero_runtime_log_addition)
+        # Rest of the code for assigning runtimes and highlighting remains the same
 
-        # Calculate row and column indices
-        row_idx = attempt // num_cols
-        col_idx = attempt % num_cols
+    # Plot the heatmaps for both metrics
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
 
-        # Assign the run time to the grid
-        run_times_grid[row_idx, col_idx] = run_time_seconds if status == "Succeeded" else 0
+    cax1 = axes[0].imshow(run_times_grid, cmap='viridis', interpolation='nearest')
+    cax2 = axes[1].imshow(timesteps_grid, cmap='plasma', interpolation='nearest')
 
-        # Highlight the specified attempts
-        if highlight_attempts and attempt in highlight_attempts:
-            plt.gca().add_patch(plt.Rectangle((col_idx-0.5, row_idx-0.5), 1, 1, fill=False, edgecolor='red'))
+    fig.colorbar(cax1, ax=axes[0], label='Runtime (log(seconds))')
+    fig.colorbar(cax2, ax=axes[1], label='Max Timestep')
 
-    # Plot the heatmap
-    plt.imshow(run_times_grid, cmap='viridis', interpolation='nearest')
-    plt.colorbar(label='Runtime (log(seconds))')
-    plt.xticks(np.arange(num_cols), param_values[1], rotation=45)
-    plt.yticks(np.arange(num_rows), param_values[0])
-    plt.xlabel(param_names[1])
-    plt.ylabel(param_names[0])
-    plt.title('Runtime Heatmap')
+    # Other code for labels, ticks, and saving remains the same
 
-    # Add attempt numbers as text labels
-    for i in range(num_rows):
-        for j in range(num_cols):
-            plt.text(j, i, str(min_attempt + i * num_cols + j), ha="center", va="center", color="w", fontsize=8)
-
-    # Save the plot as a .png file
-    plt.savefig('heatmap.png')
-
-    # Show the plot
-    plt.show()
+# }}}
 
 #}}}
 

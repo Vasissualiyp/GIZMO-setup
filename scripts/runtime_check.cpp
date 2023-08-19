@@ -31,7 +31,7 @@ std::string read_last_lines(const std::filesystem::path& path) {
 // Function to process a single file
 void process_file(const std::filesystem::path& path, std::map<int, std::string>& results) {
     std::string filename = path.filename().string();
-    std::regex attempt_regex(R"(DM\+Baryons_2023\.08\.17:(\d+))");
+    std::regex attempt_regex(R"(DM\+Baryons_2023\-08\-18:(\d+))");
     std::smatch attempt_match;
     if (std::regex_search(filename, attempt_match, attempt_regex) && attempt_match.size() > 1) {
         int attempt = std::stoi(attempt_match.str(1));
@@ -55,7 +55,7 @@ void process_file(const std::filesystem::path& path, std::map<int, std::string>&
             int hh, mm, ss;
             sscanf(runtime.c_str(), "%d:%d:%d", &hh, &mm, &ss);
             int total_seconds = hh * 3600 + mm * 60 + ss;
-            std::string status = (total_seconds < 30) ? "Failed" : "Succeeded";
+            std::string status = (total_seconds < 600) ? "Failed" : "Succeeded";
             results[attempt] = status + ": JobId=" + jobid + " RunTime=" + runtime + " Attempt=" + std::to_string(attempt);
         }
     }
