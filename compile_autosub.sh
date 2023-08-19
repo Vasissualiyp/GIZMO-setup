@@ -218,8 +218,9 @@ modify_and_submit_job() { #{{{
         sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
         sbatch "$bin_dir"/run.sh
-        echo "Submission complete. Continuing in a second..."
-        sleep 1
+        #echo "Submission complete. Continuing in a second..."
+        echo "Submission complete"
+        #sleep 1
     else
         cp ./template/run-starq.sh ./run.sh
         sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t7500|" zel.params
