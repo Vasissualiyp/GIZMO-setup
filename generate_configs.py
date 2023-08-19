@@ -2,10 +2,13 @@ import numpy as np
 from itertools import product
 
 
-generated_softenings = np.ones(5) * 8 # since 1000/128 ~ 2^3
-for i in range(np.size(generated_softenings)):
-    generated_softenings[i] = generated_softenings[i] * 10**(-i-7)
-generated_memory = [3500, 3800, 4000, 15000, 30000]
+#generated_softenings = np.ones(6) * 8 # since 1000/128 ~ 2^3
+n_softenings = 5
+generated_softenings = np.linspace(0, n_softenings-1, n_softenings)
+generated_softenings = 8 * 10**( - generated_softenings - 7)
+#for i in range(np.size(generated_softenings)):
+#    generated_softenings[i] = generated_softenings[i] * 10**(-5)
+#generated_memory = [20000, 30000, 40000, 50000, 60000, 70000] 
 
 
 powers_of_2 = np.ones(3) * 16
@@ -18,12 +21,12 @@ powers_of_2 = powers_of_2.astype(int)
 parameters = {
     "Config.sh": [
         #("ADAPTIVE_GRAVSOFT_FORALL", [2, 3]),
-        ("MULTIPLEDOMAINS", ['-', 4, 8, 16, 32, 64, 128, 256]),
+        ("MULTIPLEDOMAINS", ['-', 4, 8]),
         #("PMGRID", 4*powers_of_2),
     ],
     "zel.params": [
-        #("Softening_Type0", generated_softenings.tolist()), # Convert to Python list
-        ("MaxMemSize", generated_memory), # Convert to Python list
+        ("Softening_Type0", generated_softenings.tolist()), # Convert to Python list
+        #("MaxMemSize", generated_memory), # Convert to Python list
     ],
 }
 
