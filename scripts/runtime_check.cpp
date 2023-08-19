@@ -28,12 +28,21 @@ std::string read_last_lines(const std::filesystem::path& path) {
     return content;
 }
 
+
 // Function to process a single file
-void process_file(const std::filesystem::path& path, std::map<int, std::string>& results) {
+void process_file(const std::filesystem::path& path, std::map<int, std::string>& results, const std::string& date_regex) {
     std::string filename = path.filename().string();
-    std::regex attempt_regex(R"(DM\+Baryons_2023\-08\-18:(\d+))");
+    std::regex attempt_regex("DM\\+Baryons_" + date_regex + R"(:(\d+))");
+
+    std::cout << "Filename: " << filename << "\n";
+    std::cout << "Regex Pattern: " << attempt_regex << "\n";
+
+    
+    std::cout << "Attempting to match: " << filename << " with regex: " << attempt_regex << '\n'; // Debug print
+    
     std::smatch attempt_match;
     if (std::regex_search(filename, attempt_match, attempt_regex) && attempt_match.size() > 1) {
+        std::cout << "Match found!\n"; // Debug print
         int attempt = std::stoi(attempt_match.str(1));
         std::string content = read_last_lines(path);
 
@@ -58,16 +67,26 @@ void process_file(const std::filesystem::path& path, std::map<int, std::string>&
             std::string status = (total_seconds < 600) ? "Failed" : "Succeeded";
             results[attempt] = status + ": JobId=" + jobid + " RunTime=" + runtime + " Attempt=" + std::to_string(attempt);
         }
+    } else {
+        std::cout << "No match found.\n"; // Debug print
     }
 }
 
-int main() {
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <date>\n";
+        return 1;
+    }
+    std::string date_regex = std::string(argv[1]); // Pass the date as a command-line argument
+    date_regex = std::regex_replace(date_regex, std::regex(R"(\.)"), R"(\\.)"); // Escape any dots in the date
+
     const std::string directory = "./output/";
     const std::string output_file_path = "./results.txt";
     std::map<int, std::string> results; // Store results in a map to sort by attempt number
 
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        process_file(entry.path(), results);
+        process_file(entry.path(), results, date_regex);
     }
 
     // Write results to the output file
