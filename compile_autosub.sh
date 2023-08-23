@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # Autosub {{{
 
@@ -194,39 +194,55 @@ modify_and_submit_job() { #{{{
     mkdir -p "$bin_dir"
 
     # Extract the mpirun command from the run.sh script
+    #mpirun_command=$(grep -E '^mpirun ' run.sh)
     mpirun_command=$(grep -E '^mpirun ' run.sh)
 
     # Extract all file paths from the mpirun command
     file_paths=($(echo "$mpirun_command" | awk '{for (i=2; i<=NF; i++) print $i}'))
 
-    # Move the files to the archive directory and update the mpirun command
-    for file_path in "${file_paths[@]}"; do
-        if [ -f "$file_path" ]; then
-            cp "$file_path" "$bin_dir"
-            mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
-            cp ./run.sh "$bin_dir"
-        fi
-    done
-
     # Update the run.sh script with the new mpirun command
     sed -i "s|^mpirun .*|$mpirun_command|" run.sh
 
-    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    # Submit on Niagara {{{
+    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then 
         cp ./template/run.sh .
         sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
         sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
         echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
+
+        # Move the files to the archive directory and update the mpirun command
+        for file_path in "${file_paths[@]}"; do
+            if [ -f "$file_path" ]; then
+                cp "$file_path" "$bin_dir"
+                mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
+                cp ./run.sh "$bin_dir"
+            fi
+        done
+
         sbatch "$bin_dir"/run.sh
         #echo "Submission complete. Continuing in a second..."
         echo "Submission complete"
         #sleep 1
-    else
+	#}}}
+    # Submit into starq on Sunnyvale {{{
+    else 
         cp ./template/run-starq.sh ./run.sh
         sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t7500|" zel.params
         echo "Modifications completed successfully."
+
+        # Move the files to the archive directory and update the mpirun command
+        for file_path in "${file_paths[@]}"; do
+            if [ -f "$file_path" ]; then
+                cp "$file_path" "$bin_dir"
+                mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
+                cp ./run.sh "$bin_dir"
+            fi
+        done
+
         qsub run.sh
-    fi
+    fi #}}}
+
 }
 #}}}
 
