@@ -2,8 +2,9 @@
 
 systemname=$(hostname)
 
-# function to process squeue
+# function to process squeue for Niagara {{{
 function run_squeue {
+  echo "Here are your currently running jobs:"
   data=$(squeue -u $USER -o "%.18i %.10M" --noheader)
   readarray -t lines <<<"$data"
 
@@ -11,18 +12,26 @@ function run_squeue {
     echo "$((i+1)): ${lines[i]}"
   done
 }
+#}}}
 
-# function to process qstat
+# function to process qstat for Sunnyvale {{{
 function run_qstat {
-  data=$(qstat -u $USER | tail -n +3 | awk '{print $1 " " $4}')
+  if ! command -v qstat &> /dev/null; then
+    echo "Please ssh to ricky to run this script"
+    exit 1
+  fi
+  echo "Here are your currently running jobs:"
+
+  data=$(qstat -u $USER | awk 'NR > 5 {split($1, a, "."); print a[1] " " $NF}')
   readarray -t lines <<<"$data"
 
   for i in "${!lines[@]}"; do
     echo "$((i+1)): ${lines[i]}"
   done
 }
+#}}}
 
-# function to cancel jobs
+# function to cancel jobs {{{
 function cancel_jobs {
   read indices
   IFS=', ' read -ra IDX <<< "$indices"
@@ -46,8 +55,8 @@ function cancel_jobs {
     fi
   done
 }
+#}}}
 
-echo "Here are your currently running jobs:"
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
   run_squeue
 else
