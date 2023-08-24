@@ -3,10 +3,18 @@
 systemname=$(hostname)
 
 # Move out of the scripts directory
-cd ..
+#cd ..
+mkdir archive
+mkdir output
 
-#Step 1: Clone the repository
+#Step 1: Choose which repository to clone:{{{
+#Clone public repo
+#git clone git@bitbucket.org:phopkins/gizmo-public.git
+#mv -f gizmo-public gizmo
+# OR
+#Clone private repo
 git clone git@bitbucket.org:phopkins/gizmo.git
+#}}}
 
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
 	systemname="niagara"
