@@ -6,6 +6,7 @@ systemname=$(hostname)
 #cd ..
 mkdir archive
 mkdir output
+mkdir last_job
 
 #Step 1: Choose which repository to clone:{{{
 #Clone public repo
