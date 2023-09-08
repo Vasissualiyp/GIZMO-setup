@@ -1,4 +1,6 @@
-!/bin/bash
+#!/bin/bash
+
+systemname=$(hostname)
 
 # Autosub {{{
 
@@ -165,26 +167,6 @@ modify_params() { #{{{
 }
 #}}}
 
-#modify_and_submit_job() { #{{{
-#    systemname=$(hostname)
-#    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
-#        cp ./template/run.sh .
-#        sed -i -e "s|^#SBATCH --output=.*|#SBATCH --output=output/${name}_${current_date}:${attempt}|" run.sh
-#        sed -i -e "s|^#SBATCH --job-name=*|#SBATCH --job-name=${name}_${current_date}:${attempt}|" run.sh
-#        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4000|" zel.params
-#        echo "Modifications of the run.sh file and final modifications of zel.params file completed successfully."
-#        sbatch run.sh
-#        echo "Submission complete. Continuing in a second..."
-#	sleep 1
-#    else
-#        cp ./template/run-starq.sh ./run.sh
-#        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t7500|" zel.params
-#        echo "Modifications completed successfully."
-#        qsub run.sh
-#    fi
-#}
-##}}}
-
 modify_and_submit_job() { #{{{
     systemname=$(hostname)
     current_date=$(date +"%Y-%m-%d")
@@ -251,7 +233,11 @@ write_job_id() { #{{{
     last_job_folder="./last_job"
     current_date=$(date +"%Y-%m-%d")
     archive_file="${archive_folder}/${current_date}.txt"
-    job_id=$(squeue -u $USER --format=%i | tail -n +2 | sort -n | tail -n 1)
+    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
+        job_id=$(squeue -u $USER --format=%i | tail -n +2 | sort -n | tail -n 1)
+    else # Sunnyvale
+        job_id=$(qstat -u $USER | awk 'NR > 5 && $NF != "--" {split($1, a, "."); print a[1] " " $NF}')
+    fi
     echo "Attempt # $attempt" >> "$archive_file"
     echo "Job ID: $job_id" >> "$archive_file"
     echo "------------------------" >> "$archive_file"
@@ -260,7 +246,7 @@ write_job_id() { #{{{
 
 track_changes() { #{{{
     # Files to compare
-    files_to_compare=("./gizmo/Config.sh" "./template/zel.params")
+    files_to_compare=("./gizmo/Config.sh" "./template/zel.params" "./music/dm+b_ics.conf")
     no_changes=true
 
     for file in "${files_to_compare[@]}"; do
