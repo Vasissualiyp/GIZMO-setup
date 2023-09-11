@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Function to find the latest attempt number if not provided
+# Function to find the latest attempt number if not provided {{{
 get_latest_attempt() {
   local date_folder="$1"
   latest_attempt=0
@@ -12,9 +12,14 @@ get_latest_attempt() {
   done
   echo $latest_attempt
 }
+#}}}
 
+# Set the max time for which the script can run
+TARGET_TIME=$((12 * 60 * 60))
+
+# Main performance-checking loop {{{
 last_redshift=0
-while true; do
+while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
   clear
   
   # Get the current date in the required format
@@ -41,11 +46,14 @@ while true; do
     # Obtain redshift
     scaling_factor=$(tail -n 35 output/2023.09.11\:1/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
     redshift=$(echo "1/$scaling_factor - 1" | bc -l)
-    redshift=$(printf "%.2f\n" $redshift)
+    redshift_round=$(printf "%.2f\n" $redshift)
     
+    # Echo the current state of the sim
     echo "Current folder: ${folder}"
     echo "Number of snapshots: ${snapshot_count_minus_one}"
-    echo "Current redshift: ${redshift}"
+    echo "Current redshift: ${redshift_round}"
+
+    # Save current time and redshift into the performance reporting csv file
     if [ ! -f "$performance_file" ]; then
         touch "$performance_file"
         echo "time,redshift" >> "$performance_file"
@@ -64,3 +72,4 @@ while true; do
 
   sleep 2
 done
+#}}}
