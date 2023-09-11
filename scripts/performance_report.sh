@@ -44,7 +44,7 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
     performance_file="${folder}performance_report.csv"
 
     # Obtain redshift
-    scaling_factor=$(tail -n 35 output/2023.09.11\:1/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
+    scaling_factor=$(tail -n 35 "${folder}"/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
     redshift=$(echo "1/$scaling_factor - 1" | bc -l)
     redshift_round=$(printf "%.2f\n" $redshift)
     
@@ -52,6 +52,7 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
     echo "Current folder: ${folder}"
     echo "Number of snapshots: ${snapshot_count_minus_one}"
     echo "Current redshift: ${redshift_round}"
+    echo "Current scaling factor: ${scaling_factor}"
 
     # Save current time and redshift into the performance reporting csv file
     if [ ! -f "$performance_file" ]; then
