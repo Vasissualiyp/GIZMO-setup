@@ -13,6 +13,7 @@ get_latest_attempt() {
   echo $latest_attempt
 }
 
+last_redshift=0
 while true; do
   clear
   
@@ -35,9 +36,25 @@ while true; do
     # Count the number of snapshots and subtract 1
     snapshot_count=$(ls "${folder}"snapshot_*.hdf5 2>/dev/null | wc -l)
     snapshot_count_minus_one=$((snapshot_count - 1))
+    performance_file="${folder}performance_report.csv"
+
+    # Obtain redshift
+    scaling_factor=$(tail -n 35 output/2023.09.11\:1/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
+    redshift=$(echo "1/$scaling_factor - 1" | bc -l)
+    redshift=$(printf "%.2f\n" $redshift)
     
     echo "Current folder: ${folder}"
     echo "Number of snapshots: ${snapshot_count_minus_one}"
+    echo "Current redshift: ${redshift}"
+    if [ ! -f "$performance_file" ]; then
+        touch "$performance_file"
+        echo "time,redshift" >> "$performance_file"
+    fi
+    if [ "$redshift" != "$last_redshift" ]; then
+        echo "$(date '+%s'),$redshift" >> "$performance_file"
+	last_redshift=$redshift
+    fi
+        
 
     # Optionally, list the files in the folder
     # ls "${folder}"
