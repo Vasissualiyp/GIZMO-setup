@@ -61,12 +61,13 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
     scaling_factor=$(tail -n 35 "${folder}"/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
     redshift=$(echo "1/$scaling_factor - 1" | bc -l)
     redshift_round=$(printf "%.2f\n" $redshift)
+    scaling_factor_round=$(printf "%.2f\n" $scaling_factor)
     
     # Echo the current state of the sim
     echo "Current folder: ${folder}"
     echo "Number of snapshots: ${snapshot_count_minus_one}"
     echo "Current redshift: ${redshift_round}"
-    echo "Current scaling factor: ${scaling_factor}"
+    echo "Current scaling factor: ${scaling_factor_round}"
 
     if $report; then
       # Save current time and redshift into the performance reporting csv file
