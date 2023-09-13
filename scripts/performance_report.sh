@@ -17,6 +17,20 @@ get_latest_attempt() {
 # Set the max time for which the script can run
 TARGET_TIME=$((12 * 60 * 60))
 
+# Handle noreport situation {{{
+# Default value for report
+report=true
+# Loop through all arguments
+for arg in "$@"
+do
+    case $arg in
+        --noreport)
+            report=false
+            ;;
+    esac
+done
+#}}}
+
 # Main performance-checking loop {{{
 last_redshift=0
 while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
@@ -26,13 +40,13 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
   current_date=$(date +"%Y.%m.%d")
   date_folder="./output/${current_date}:"
 
-  # If the attempt number is provided, use it
-  if [ -n "$1" ]; then
-    attempt_number=$1
-  else
-    # If not provided, find the latest attempt number
-    attempt_number=$(get_latest_attempt "${date_folder}")
-  fi
+  ## If the attempt number is provided, use it
+  #if [ -n "$1" ]; then
+  #  attempt_number=$1
+  #else
+  #  # If not provided, find the latest attempt number
+  #fi
+  attempt_number=$(get_latest_attempt "${date_folder}")
 
   folder="${date_folder}${attempt_number}/"
 
@@ -54,14 +68,16 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
     echo "Current redshift: ${redshift_round}"
     echo "Current scaling factor: ${scaling_factor}"
 
-    # Save current time and redshift into the performance reporting csv file
-    if [ ! -f "$performance_file" ]; then
-        touch "$performance_file"
-        echo "time,redshift" >> "$performance_file"
-    fi
-    if [ "$redshift" != "$last_redshift" ]; then
-        echo "$(date '+%s'),$redshift" >> "$performance_file"
-	last_redshift=$redshift
+    if $report; then
+      # Save current time and redshift into the performance reporting csv file
+      if [ ! -f "$performance_file" ]; then
+          touch "$performance_file"
+          echo "time,redshift" >> "$performance_file"
+      fi
+      if [ "$redshift" != "-1" ] && [ "$redshift" != "$last_redshift" ]; then
+          echo "$(date '+%s'),$redshift" >> "$performance_file"
+          last_redshift=$redshift
+      fi
     fi
         
 

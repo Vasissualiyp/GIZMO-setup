@@ -31,7 +31,9 @@ if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
 	done
 else # Sunnyvale
 	while true; do
+		sleeptime=$sleeptime * 10
                 # Collect command output to a variable
+		clear
                 output=$(qstat -u $USER)
                 # Calculate number of lines in the output
                 lines=$(echo "$output" | wc -l)
@@ -39,15 +41,15 @@ else # Sunnyvale
                 lines=$((lines-2))
 
                 # Move the cursor to the beginning of the line
-                echo -ne "\033[2A"
+                #echo -ne "\033[2A"
 
                 # Print command output
                 echo "$output"
 
                 # Move the cursor up by number of lines in the output
-                if [ $lines -gt 0 ]; then
-                    tput cuu $lines
-                fi
+                #if [ $lines -gt 0 ]; then
+                #    tput cuu $lines
+                #fi
 
                 sleep $sleeptime 
 	done	
