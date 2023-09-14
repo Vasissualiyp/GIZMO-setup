@@ -81,6 +81,14 @@ echo "USE_FFTW3" >> Config.sh
 echo "OPENMP=2" >> Config.sh
 echo "MULTIPLEDOMAINS=16" >> Config.sh
 
-# Step 4: Open Config.sh with vim
+# Step 4: Get the spcool tables
+cd ..
+wget http://www.tapir.caltech.edu/~phopkins/public/spcool_tables.tgz
+tar -xzf spcool_tables.tgz
+rm -f -r spcool_tables.tgz
+cd gizmo
+
+
+# Step 5: Open Config.sh with vim
 vim Config.sh
 
