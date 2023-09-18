@@ -33,7 +33,12 @@ function run_qstat {
 
 # function to cancel jobs {{{
 function cancel_jobs {
-  read indices
+  if [[ "$1" == "--killall" ]]; then
+    indices=$(seq 1 "${#lines[@]}")
+  else
+    read -p "Enter the indices of jobs you want to cancel (e.g. 1,3-5): " indices
+  fi
+
   IFS=', ' read -ra IDX <<< "$indices"
 
   JOBS_TO_CANCEL=()
@@ -57,12 +62,19 @@ function cancel_jobs {
 }
 #}}}
 
-if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
-  run_squeue
+if [[ "$1" == "--killall" ]]; then
+  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    run_squeue
+  else
+    run_qstat
+  fi
+  cancel_jobs "--killall"
 else
-  run_qstat
+  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    run_squeue
+  else
+    run_qstat
+  fi
+  cancel_jobs
 fi
-
-echo "Enter the indices of jobs you want to cancel (e.g. 1,3-5):"
-cancel_jobs
 
