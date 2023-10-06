@@ -15,10 +15,10 @@ The `gizmo_setup.sh` script is designed to automate the setup of the GIZMO codeb
 
 #### Usage
 
-To run the script, navigate to its location and execute:
+To run the script, execute:
 
 ```bash
-./gizmo_setup.sh
+./scripts/gizmo_setup.sh
 ```
 
 #### Key Functionalities
@@ -77,6 +77,35 @@ To execute the script, run:
 
 ## Job Management Scripts
 
+### `job_tracker.py`
+
+#### Description
+
+The `job_tracker.py` script is a Python utility designed to monitor and log CPU usage on the cluster. The script uses the Watchdog library to track changes in a `cpu.txt` file and writes the CPU usage to a CSV file.
+
+#### Usage
+
+To run the script, navigate to the root directory and execute:
+
+```bash
+./scripts/job_tracker.py
+```
+
+#### Key Functionalities
+
+1. **Watchdog Observer**: Utilizes the Watchdog library's Observer class to monitor changes to the file system.
+
+2. **Event Handling**: Defines a custom event handler (`CPUHandler`) that triggers when `cpu.txt` is modified. It reads the last 35 lines of the file to gather CPU usage data.
+
+3. **CSV Logging**: Writes the monitored CPU usage to a specified CSV file. The CSV contains fields like 'user', 'system', 'idle', etc., which are populated based on the parsed `cpu.txt`.
+
+4. **Time-stamping**: Each entry in the CSV file is time-stamped using Python's datetime library.
+
+#### Additional Notes
+
+- The script is specifically tailored to monitor CPU usage, and the format of the logged data is influenced by the structure of `cpu.txt`.
+- It operates in real-time, constantly monitoring for changes and updating the CSV log accordingly.
+
 ### `job_cancel.sh`
 
 #### Description
@@ -85,11 +114,20 @@ The `job_cancel.sh` script is a Bash utility designed to manage and cancel runni
 
 #### Usage
 
-To run the script, navigate to its location and execute:
+To run the script, execute:
 
 ```bash
-./job_cancel.sh
+./scripts/job_cancel.sh
 ```
+
+You will then be prompted to enter the indices of the jobs you wish to cancel:
+
+Enter the indices of the jobs you want to cancel, separating individual indices with commas and specifying ranges with a dash. For example:
+
+* To cancel the first job, enter: `1`
+* To cancel the first and third jobs, enter: `1,3`
+* To cancel the first through fourth jobs, enter: `1-4`
+* To cancel the first job and third through fifth jobs, enter: `1,3-5`
 
 #### Key Functionalities
 
@@ -106,7 +144,42 @@ To run the script, navigate to its location and execute:
 - The script makes use of read arrays to store the output of `squeue` and `qstat`, making it easier to process and display job data.
 - The script is interactive, prompting the user for inputs to select which jobs to cancel.
 
-### Documentation for `day_clear.sh`
+### `job_scheduler.sh`
+
+#### Description
+
+**This script might be malfunctioning, use at your own risk!**
+
+The `job_scheduler.sh` script is a Bash utility intended for automatically scheduling jobs on the cluster. When run, it enters a loop that checks the job queue and triggers the `compile_autosub.sh` script when no jobs are found for the user. 
+
+Main difference between this utility and using several config files for `compile_autosub.sh` is that this script submits one job to run after another, while `compile_autosub.sh` submits all jobs at once.
+
+Another thing is that this script runs in the background with `nohup`, so you can log out and the jobs will be submitted automatically
+
+#### Usage
+
+To execute the script, excute:
+
+```bash
+./scripts/job_scheduler.sh
+```
+
+#### Key Functionalities
+
+1. **Dependency Check**: The script checks for the presence of the `qstat` command and exits if not found, suggesting that the user ssh into Ricky.
+
+2. **Job Queue Monitoring**: Uses `qstat` to monitor the job queue for the current user. Specifically, it looks for jobs that are still in the queue and belong to the user.
+
+3. **Auto Scheduling**: If no jobs are found for the current user, the script triggers the `compile_autosub.sh` script to schedule a new job.
+
+4. **Loop and Sleep**: The script runs in a loop and sleeps for 60 seconds between each check of the job queue.
+
+#### Additional Notes
+
+- The script employs `readarray` to read the job queue details into an array, which is then processed to determine whether any jobs are still active for the user.
+- It uses `nohup` and `bash -c` to run the script in the background, logging its output to `nohup_job_scheduler.out`.
+
+### `day_clear.sh`
 
 #### Description
 
@@ -145,7 +218,7 @@ The `generate_configs.py` script is a Python utility designed to automate the ge
 To execute the script, run:
 
 ```bash
-python generate_configs.py
+python ./scripts/generate_configs.py
 ```
 
 #### Key Functionalities
@@ -173,10 +246,10 @@ The `heatmap_generator.py` script is a Python script for generating heatmaps bas
 
 #### Usage
 
-To run the script, navigate to its location and execute:
+To run the script, execute:
 
 ```bash
-python heatmap_generator.py
+python ./scripts/heatmap_generator.py
 ```
 
 #### Key Functionalities
