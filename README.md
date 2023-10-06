@@ -20,7 +20,7 @@ The `music_setup.sh` script automatically clones the MUSIC suite for cosmologica
 
 ### Submission Scripts
 
-The `autosub.sh` script (the only script not in the `scripts` folder) automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission. 
+The `compile_autosub.sh` script (the only script not in the `scripts` folder) automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission. 
 
 ### Job Management Script
 
