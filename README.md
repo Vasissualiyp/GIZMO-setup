@@ -1,28 +1,31 @@
-# README.md
 **This documentation is slightly outdated!**
 
 ## GIZMO Setup Scripts
 
 This repository contains scripts for setting up and running GIZMO simulations. The scripts automate the process of configuring GIZMO, submitting jobs to clusters, and generating initial conditions (ICs) for a Zel'dovich pancake simulation.
 
+##Structure of scripts
+
+All but one scripts are located in the `scripts` folder. It is recommended that you run all scripts from current directory, i.e. `./scripts/gizmo_setup.sh`.
+
+Most of the scripts automatically detect your system (currently supported: ScieNet Niagara and CITA Sunnyvale), and execute appropriate commands. 
+
 ### Setup Scripts
 
-The `gizmo_setup.sh` script automates the process of cloning the GIZMO repository, configuring the Makefile for different clusters (Niagara or Starq), creating a Config.sh file, and copying the TREECOOL file.
+The `gizmo_setup.sh` script automates the process of cloning the GIZMO repository, configuring the Makefile for different clusters (Niagara or Starq), creating a Config.sh file, and copying the TREECOOL file. Currently it also includes downloading spcool tables for GIZMO native cooling library.
+
+The `music_setup.sh` script automatically clones the MUSIC suite for cosmological ICs generation into the `./music` folder.
 
 ### Submission Scripts
 
-The `autosub.sh` script automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission.
-
-The `compile_and_run.sh` script streamlines the process of compiling and submitting tasks for execution. By incorporating configuration adjustments, it allows the user to automatically clean, compile with desired parameters, and submit tasks to the desired destination without manual intervention. The script offers efficiency and consistency, making it an essential tool for repetitive and complex build and submission procedures.
+The `autosub.sh` script (the only script not in the `scripts` folder) automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission. 
 
 ### Job Management Script
-This script allows you to quickly view and cancel running jobs on a cluster using either the `squeue` or `qstat` commands, depending on the host system. It simplifies job management by providing a list of your current jobs with their IDs and runtimes, and lets you easily specify which jobs you want to cancel by their indices.
+The script `sqc.sh` allows you to quickly view and cancel running jobs on a cluster using either the `squeue` or `qstat` commands, depending on the host system. It simplifies job management by providing a list of your current jobs with their IDs and runtimes, and lets you easily specify which jobs you want to cancel by their indices. The script updates the job progress in real time.
 
-To run the script, simply execute it in your terminal:
+The script `job_tracker.sh` works like sqc.sh, except it tracks the current timestep of the latest simulation.
 
-```bash
-./job_management.sh
-```
+The script `performance_report.sh` writes current timestep of the simulation and real time since the script was started into a csv file in the directory where the simulation is running. This script is useful if you want to track how fast does the simulation progress with time. You should run this script at the same time as the job is running. What I would suggest is running this script at the same time with `sqc.sh` to make sure that you are not tracking inactive jobs. For this script, it is also very important to set its maximum time of running if you are going to make it run automatically with `nohup` (in the background, with possibility of logging out)
 
 ### Initial Condition Scripts
 
