@@ -4,9 +4,9 @@
 
 This repository contains scripts for setting up and running GIZMO simulations. The scripts automate the process of configuring GIZMO, submitting jobs to clusters, and generating initial conditions (ICs) for a Zel'dovich pancake simulation.
 
-##Structure of scripts
+## Structure of scripts
 
-All but one scripts are located in the `scripts` folder. It is recommended that you run all scripts from current directory, i.e. `./scripts/gizmo_setup.sh`.
+All but one scripts are located in the `scripts` folder. It is recommended that you run all scripts from current directory, i.e. `./scripts/gizmo_setup.sh`. 
 
 Most of the scripts automatically detect your system (currently supported: ScieNet Niagara and CITA Sunnyvale), and execute appropriate commands. 
 
