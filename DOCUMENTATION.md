@@ -1,5 +1,5 @@
 # DOCUMENTATION.md
-**This documentation is slightly outdated!**
+**This Documentation was last updated on 2023.10.06**
 
 ## GIZMO Setup Scripts
 
@@ -35,6 +35,31 @@ To run the script, execute:
 
 - The script allows for flexibility in choosing which GIZMO repository to clone (public or private), though the choice must be manually uncommented in the script.
 - It prepares the environment by creating necessary directories (`archive`, `output`, `last_job`) for storing simulation data and outputs.
+
+### `music_setup.sh`
+
+#### Description
+
+The `music_setup.sh` script is a Bash utility that automates the cloning and setup of the MUSIC Initial Condition Generator from its Bitbucket repository.
+
+#### Usage
+
+To run the script, navigate to the root directory and execute:
+
+```bash
+./scripts/music_setup.sh
+```
+
+#### Key Functionalities
+
+1. **Git Cloning**: The script clones the MUSIC repository from Bitbucket using the `git clone` command.
+
+2. **Directory Navigation**: After cloning, the script changes the working directory to the newly created `music` folder.
+
+#### Additional Notes
+
+- The script is straightforward and serves the purpose of simplifying the initial setup of the MUSIC software.
+- No error handling or additional functionalities are currently implemented.
 
 ## Submission Scripts
 
@@ -76,6 +101,37 @@ To execute the script, run:
 - Error checks and validations are included at different stages to ensure robust functioning.
 
 ## Job Management Scripts
+
+### `sqc.sh`
+
+#### Description
+
+The `sqc.sh` script is a Bash utility designed to continually update the queue status for the user's jobs on the Niagara supercomputer. It fetches the job information using the `sqc -u $USER` command and displays it on the terminal.
+
+#### Usage
+
+To run the script, navigate to the root directory and execute:
+
+```bash
+./scripts/sqc.sh
+```
+
+#### Key Functionalities
+
+1. **System Identification**: Checks the system hostname to determine if it is running on Niagara.
+  
+2. **Queue Status**: Fetches the current job queue status using the `sqc -u $USER` command.
+
+3. **Continuous Update**: The script runs in an infinite loop, updating the queue status every second (configurable via the `sleeptime` variable).
+
+4. **Display Formatting**: Manages terminal display to ensure that the queue information is presented neatly.
+
+#### Additional Notes
+
+- The script is specifically designed for use on the Niagara supercomputer.
+- It employs basic terminal commands for cursor manipulation and display formatting.
+- There is no error-handling mechanism in place, so the user should ensure correct configurations.
+- The script is intended for use within this specific project's ecosystem and may require modifications for broader applications.
 
 ### `job_tracker.py`
 
@@ -207,6 +263,36 @@ To execute the script, run:
 
 ## Job Performance Management
 
+### `performance_report.sh`
+
+#### Description
+
+The `performance_report.sh` script is a Bash utility designed to generate performance reports for simulation runs. It identifies the latest attempt and outputs key performance metrics based on cpu.txt file. It saves the output into the csv file in the directory of the cpu.txt.
+
+#### Usage
+
+To run the script, navigate to the root directory and execute:
+
+```bash
+./scripts/performance_report.sh
+```
+
+#### Key Functionalities
+
+1. **Latest Attempt Identification**: Utilizes a function to find the latest attempt number if not provided by the user.
+
+2. **Time Limit**: Sets a maximum runtime for the script, defaulting to 12 hours.
+
+3. **Log File Parsing**: Parses through log files to gather information on various parameters like CPU usage and memory consumption.
+
+4. **Report Generation**: Outputs a performance report detailing the key metrics gathered from the log files.
+
+#### Additional Notes
+
+- The script assumes specific directory structures and file naming conventions.
+- No error-handling mechanisms are in place, so the user should be cautious while using the script.
+- The script is intended for use within this specific project's ecosystem and may require modifications for broader applications.
+
 ### `generate_configs.py`
 
 #### Description
@@ -290,3 +376,63 @@ The `hdf5zelgenglass.py` script in the `zeldovich_ics_gen` directory generates t
 4. Finally, it writes all this data, along with some header attributes that the Arepo code uses to set up the simulation, to an HDF5 file named `IC.hdf5`.
 
 This script can be modified to create ICs for different types of cosmological simulations, by changing the functions used to calculate the initial conditions.
+
+## Other Scripts
+
+### `niagara_push.sh`
+
+#### Description
+
+The `niagara_push.sh` script is a Bash utility for transferring an Initial Condition (IC) file to a remote server, specifically Niagara. The script runs an HDF5 IC generator, then uses `rsync` to move the IC file to the Niagara server.
+
+#### Usage
+
+To execute the script, navigate to the root directory and run:
+
+```bash
+./scripts/niagara_push.sh
+```
+
+#### Key Functionalities
+
+1. **Server Configuration**: The script specifies server details like the user, server address, and destination folder.
+
+2. **IC Generation**: Runs a Python script, `hdf5zelgenglass.py`, to generate an HDF5 IC file.
+
+3. **File Transfer**: Utilizes the `rsync` command to transfer the generated IC file (`IC.hdf5`) to the specified server and folder.
+
+#### Additional Notes
+
+- The script relies on pre-configured server details and does not have error-handling mechanisms.
+- It's designed to operate specifically with the Niagara server and the HDF5 IC file format.
+
+### `snapshottimes_generator.py`
+
+#### Description
+
+The `snapshottimes_generator.py` script is a Python utility that generates a geometric sequence of snapshot times between a given start time and end time. The script utilizes the `numpy` and `scipy` libraries for numerical operations and statistical functions.
+
+#### Usage
+
+To run the script, navigate to the root directory and execute:
+
+```bash
+python ./scripts/snapshottimes_generator.py
+```
+
+#### Key Functionalities
+
+1. **Snapshot Time Calculation**: Generates a geometric sequence of snapshot times using the `numpy` `logspace` function between a given start time (`t1`) and end time (`t2`).
+
+2. **File Writing**: Writes the generated snapshot times to a file specified by the user.
+
+3. **Normal Distribution Fitting**: Utilizes the `scipy.stats` `norm` and `erf` functions for normal distribution fitting.
+
+4. **Customizable Parameters**: Allows customization of start time (`t1`), end time (`t2`), and the number of snapshots (`n`).
+
+#### Additional Notes
+
+- The script provides a set of helper functions to write snapshot times to a file and generate geometric snapshot times.
+- It is designed to operate with specific naming conventions and directory structures.
+- There is no error-handling mechanism in place, so the user should ensure correct configurations.
+- The script is intended for use within this specific project's ecosystem and may require modifications for broader applications.
