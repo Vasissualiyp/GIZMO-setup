@@ -1,4 +1,4 @@
-**This documentation is slightly outdated!**
+**This documentation was last updated on 2023.10.06**
 
 ## GIZMO Setup Scripts
 
@@ -9,6 +9,8 @@ This repository contains scripts for setting up and running GIZMO simulations. T
 All but one scripts are located in the `scripts` folder. It is recommended that you run all scripts from current directory, i.e. `./scripts/gizmo_setup.sh`. 
 
 Most of the scripts automatically detect your system (currently supported: ScieNet Niagara and CITA Sunnyvale), and execute appropriate commands. 
+
+For more information about the structure of the folders, and information about the code, check `DOCUMENTATION.md`.
 
 ### Setup Scripts
 
@@ -21,11 +23,18 @@ The `music_setup.sh` script automatically clones the MUSIC suite for cosmologica
 The `autosub.sh` script (the only script not in the `scripts` folder) automates the process of setting up and submitting a job to a cluster. It extracts the job name, creates a unique output directory, modifies necessary parameters based on the host system, and submits the job. Additionally, it tracks changes made to specific parameters in the `./gizmo/Config.sh` and `./template/zel.params` files between job submissions, logging additions, edits, or removals. These changes are archived by date, and the current versions of the files are stored for comparison with the next job submission. 
 
 ### Job Management Script
+
 The script `sqc.sh` allows you to quickly view and cancel running jobs on a cluster using either the `squeue` or `qstat` commands, depending on the host system. It simplifies job management by providing a list of your current jobs with their IDs and runtimes, and lets you easily specify which jobs you want to cancel by their indices. The script updates the job progress in real time.
 
 The script `job_tracker.sh` works like sqc.sh, except it tracks the current timestep of the latest simulation.
 
+The script `day_clear.sh` clears all jobs from today and resets the directory as if no jobs were ran today.
+
+### Job Performance Mangement
+
 The script `performance_report.sh` writes current timestep of the simulation and real time since the script was started into a csv file in the directory where the simulation is running. This script is useful if you want to track how fast does the simulation progress with time. You should run this script at the same time as the job is running. What I would suggest is running this script at the same time with `sqc.sh` to make sure that you are not tracking inactive jobs. For this script, it is also very important to set its maximum time of running if you are going to make it run automatically with `nohup` (in the background, with possibility of logging out)
+
+`heatmap_generator.py` and `runtime_check.ccp` are legacy scripts that were used to check the dependence of short run speed (max timestep) on a pair of parameters. They create a heatmap that should in theory show which jobs perform the best. Should be used in combination with `generate_configs.py` script for generation of 'grid' of parameters for the heatmap and with `compile_autosub.sh` script for batch job submission. Currently the axes for heatmap have to be set manually in the script.
 
 ### Initial Condition Scripts
 
