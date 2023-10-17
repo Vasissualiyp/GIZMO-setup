@@ -9,12 +9,20 @@ mkdir output
 mkdir last_job
 
 #Step 1: Choose which repository to clone:{{{
-#Clone public repo
+
+##Clone public repo
 #git clone git@bitbucket.org:phopkins/gizmo-public.git
 #mv -f gizmo-public gizmo
+
 # OR
+
 #Clone private repo
-git clone git@bitbucket.org:phopkins/gizmo.git
+#git clone git@bitbucket.org:phopkins/gizmo.git
+
+# OR
+
+#Clone private starforge repo
+git clone git@bitbucket.org:guszejnov/gizmo_imf.git
 #}}}
 
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
@@ -90,5 +98,5 @@ cd gizmo
 
 
 # Step 5: Open Config.sh with vim
-vim Config.sh
+#vim Config.sh
 
