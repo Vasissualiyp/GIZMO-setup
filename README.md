@@ -4,6 +4,8 @@
 
 This repository contains scripts for setting up and running GIZMO simulations. The scripts automate the process of configuring GIZMO, submitting jobs to clusters, and generating initial conditions (ICs) for a Zel'dovich pancake simulation.
 
+I use this repository to set up and run my GIZMO simulations. All things directly related to running GIZMO that I use are in this repository. If you are interested in analysis of simulations, check out my GIZMO-analysis repository: https://github.com/Vasissualiyp/GIZMO-analysis
+
 ## Structure of scripts
 
 All but one scripts are located in the `scripts` folder. It is recommended that you run all scripts from current directory, i.e. `./scripts/gizmo_setup.sh`. 
