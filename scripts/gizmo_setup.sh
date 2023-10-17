@@ -9,29 +9,35 @@ mkdir output
 mkdir last_job
 
 #Step 1: Choose which repository to clone:{{{
+pull_gizmo() {
+  # Prompt the user to select which repo to clone
+  echo "Which repo do you want to clone?"
+  echo "1) Public repo"
+  echo "2) Private repo"
+  echo "3) Starforge repo"
+  read -p "Enter the number corresponding to your choice: " choice
 
-##Clone public repo
-#git clone git@bitbucket.org:phopkins/gizmo-public.git
-#mv -f gizmo-public gizmo
+  # Clone the selected repo
+  case $choice in
+    1)
+      git clone git@bitbucket.org:phopkins/gizmo-public.git
+      mv -f gizmo-public gizmo
+      ;;
+    2)
+      git clone git@bitbucket.org:phopkins/gizmo.git
+      ;;
+    3)
+      git clone git@bitbucket.org:guszejnov/gizmo_imf.git
+      mv -f gizmo-public gizmo
+      ;;
+    *)
+      echo "Invalid choice. Exiting."
+      return 1
+      ;;
+  esac
+} #}}}
 
-# OR
-
-#Clone private repo
-#git clone git@bitbucket.org:phopkins/gizmo.git
-
-# OR
-
-#Clone private starforge repo
-git clone git@bitbucket.org:guszejnov/gizmo_imf.git
-mv -f gizmo-public gizmo
-#}}}
-
-if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
-	systemname="niagara"
-else
-	systemname="starq"
-fi
-
+pull_gizmo
 
 # Step 2: Alter the Makefile.systype
 cd gizmo
