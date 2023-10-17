@@ -23,6 +23,7 @@ mkdir last_job
 
 #Clone private starforge repo
 git clone git@bitbucket.org:guszejnov/gizmo_imf.git
+mv -f gizmo-public gizmo
 #}}}
 
 if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
