@@ -222,7 +222,12 @@ modify_and_submit_job() { #{{{
             fi
         done
 
-        qsub run.sh
+        if ! command -v qsub &> /dev/null; then
+          echo "Error: qsub is not available. Run script from ricky"
+          exit 1
+        fi
+
+        qsub run.sh 
     fi #}}}
 
 }
