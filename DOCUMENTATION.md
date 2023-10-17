@@ -1,5 +1,5 @@
 # DOCUMENTATION.md
-**This Documentation was last updated on 2023.10.06**
+**This Documentation was last updated on 2023.10.17**
 
 ## GIZMO Setup Scripts
 
@@ -27,7 +27,7 @@ To run the script, execute:
 
 2. **Directory Preparation**: Creates the `archive`, `output`, and `last_job` directories if they don't already exist.
 
-3. **Repository Cloning**: Clones the GIZMO repository from Bitbucket into the current directory. It has provisions for cloning either a public or a private repository based on comments within the script.
+3. **Repository Cloning**: Clones the GIZMO repository from Bitbucket into the current directory. It has provisions for cloning either a public, private or starforge repository. It inquires which repository the user is interested in before cloning.
 
 4. **Makefile Configuration**: Modifies the `Makefile.systype` file in the newly cloned GIZMO directory. It sets the `SYSTYPE` variable based on the identified system (Niagara or Starq).
 

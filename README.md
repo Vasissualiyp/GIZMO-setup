@@ -1,4 +1,4 @@
-**This documentation was last updated on 2023.10.06**
+**This documentation was last updated on 2023.10.17**
 
 ## GIZMO Setup Scripts
 
