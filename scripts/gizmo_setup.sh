@@ -99,7 +99,8 @@ echo "MULTIPLEDOMAINS=16" >> Config.sh
 # Step 4: Get the spcool tables
 cd ..
 wget http://www.tapir.caltech.edu/~phopkins/public/spcool_tables.tgz
-tar -xzf spcool_tables.tgz
+mkdir -p spcool_tables
+tar -xzvf spcool_tables.tgz -C spcool_tables
 rm -f -r spcool_tables.tgz
 cd gizmo
 
