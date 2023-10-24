@@ -3,7 +3,8 @@ ifeq ($(SYSTYPE),"CITA-starq")
 CC       =  mpicc
 CXX      =  mpicxx
 #OPTIMIZE =  -O2 -funroll-loops -finline-functions -march=native -flto -fno-fat-lto-objects
-OPTIMIZE =  -O3 -march=znver3 -mtune=znver3 -funroll-loops -finline-functions -march=native -flto -fno-fat-lto-objects
+OPTIMIZE =  -O3 -ffast-math -march=znver3 -mtune=znver3 -funroll-loops -finline-functions -march=native -flto -fno-fat-lto-objects
+#gcc -O3 -ffast-math -mtune=znver3 -march=znver3
 OPTIMIZE+= -g -Wall # For debugging
 ifeq (OPENMP,$(findstring OPENMP,$(CONFIGVARS)))
     OPTIMIZE += -fopenmp   # openmp required compiler flags
@@ -19,12 +20,11 @@ HDF5LIB  =  -L/cita/modules/hdf5/1.12.1-ucx/lib -lhdf5 -lz
 OPT     += -DUSE_MPI_IN_PLACE -DHDF5_DISABLE_VERSION_CHECK
 ## Notes [Vasilii Pustovoit]:
 ##
-## The module system was updated in May 2023 only for starq CITA queue. The new modules that should be loaded are:
-##    module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx
+## The module system was updated in October 2023 only for starq CITA queue. The new modules that should be loaded are:
+##    module load gcc/13.2.0 openmpi/4.1.6-gcc-ucx gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx
 
-## Neccessary edits: your run.sh file (job submission script) should include the compilation of gizmo (the code should 
+## Neccessary edits: your run.sh file (job submission script) should include the compilation of gizmo (the code should
 ## NOT be compiled on kingcrab/lobster/ricky etc.)
 ## Your .params file contain MaxMemsize to 7500 (otherwise the code grabs a lot of threads)
 
 endif
-
