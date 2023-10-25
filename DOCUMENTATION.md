@@ -1,5 +1,5 @@
 # DOCUMENTATION.md
-**This Documentation was last updated on 2023.10.17**
+**This Documentation was last updated on 2023.10.25**
 
 ## GIZMO Setup Scripts
 
@@ -33,8 +33,8 @@ To run the script, execute:
 
 #### Additional Notes
 
-- The script allows for flexibility in choosing which GIZMO repository to clone (public or private), though the choice must be manually uncommented in the script.
-- It prepares the environment by creating necessary directories (`archive`, `output`, `last_job`) for storing simulation data and outputs.
+- The script allows for flexibility in choosing which GIZMO repository to clone (public, private, or starforge).
+- It prepares the environment by creating necessary directories (`archive`, `output`, `last_job`, etc.) for storing simulation data and outputs.
 
 ### `music_setup.sh`
 
