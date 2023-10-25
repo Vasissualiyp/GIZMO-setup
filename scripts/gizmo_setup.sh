@@ -20,15 +20,13 @@ pull_gizmo() {
   # Clone the selected repo
   case $choice in
     1)
-      git clone git@bitbucket.org:phopkins/gizmo-public.git
-      mv -f gizmo-public gizmo
+      git clone git@bitbucket.org:phopkins/gizmo-public.git gizmo
       ;;
     2)
       git clone git@bitbucket.org:phopkins/gizmo.git
       ;;
     3)
-      git clone git@bitbucket.org:guszejnov/gizmo_imf.git
-      mv -f gizmo-public gizmo
+      git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo
       ;;
     *)
       echo "Invalid choice. Exiting."
