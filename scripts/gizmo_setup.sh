@@ -41,9 +41,9 @@ pull_gizmo
 cd gizmo
 sed -i '/^[^#]/ s/^/#/' Makefile.systype
 #sed -i '29s/^.//' Makefile.systype
-if [ "$systemname" == "niagara" ]; then
+if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
 	echo "SYSTYPE=\"SciNet\"" >> Makefile.systype
-elif [ "$systemname" == "starq" ]; then
+else # Sunnyvale
 	echo "SYSTYPE=\"CITA-starq\"" >> Makefile.systype
 
 	# Path to the Makefile
