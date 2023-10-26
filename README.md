@@ -1,4 +1,4 @@
-**This documentation was last updated on 2023.10.17**
+**This documentation was last updated on 2023.10.26**
 
 ## GIZMO Setup Scripts
 
@@ -14,11 +14,12 @@ Most of the scripts automatically detect your system (currently supported: ScieN
 
 For more information about the structure of the folders, and information about the code, check `DOCUMENTATION.md`.
 
-### Setup Scripts
+### Setup Script
 
 The `gizmo_setup.sh` script automates the process of cloning the GIZMO repository, configuring the Makefile for different clusters (Niagara or Starq), creating a Config.sh file, and copying the TREECOOL file. Currently it also includes downloading spcool tables for GIZMO native cooling library.
 
-The `music_setup.sh` script automatically clones the MUSIC suite for cosmological ICs generation into the `./music` folder.
+This script allows you to choose which of the available repositories you would liek to clone (currently supported: public, private, STARFORGE).
+This script also lets you choose one of the available tools that can be useful for working with gizmo (MUSIC, Rockstar, GRACKLE).
 
 ### Submission Scripts
 

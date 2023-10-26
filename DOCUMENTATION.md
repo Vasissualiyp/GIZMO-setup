@@ -1,5 +1,5 @@
 # DOCUMENTATION.md
-**This Documentation was last updated on 2023.10.25**
+**This Documentation was last updated on 2023.10.26**
 
 ## GIZMO Setup Scripts
 
@@ -11,7 +11,7 @@ This repository contains scripts for setting up and running GIZMO simulations. T
 
 #### Description
 
-The `gizmo_setup.sh` script is designed to automate the setup of the GIZMO codebase. It performs system-specific configurations and clones the GIZMO repository, preparing it for subsequent simulation runs.
+The `gizmo_setup.sh` is a master setup script designed to automate the setup of the GIZMO codebase. It performs system-specific configurations and clones the GIZMO repository, preparing it for subsequent simulation runs.
 
 #### Usage
 
@@ -21,7 +21,9 @@ To run the script, execute:
 ./scripts/gizmo_setup.sh
 ```
 
-#### Key Functionalities
+You then will be prompted with a choice of gizmo repo you would like to clone (1-3, public, private and starforge respectively). From the list you also can choose to clone MUSIC (Cosmological ICs generation), Rockstar (Halo Finder), or GRACKLE (Thermochemistry library).
+
+#### Key Functionalities (GIZMO setup)
 
 1. **System Identification**: The script checks the hostname to identify the current system (Niagara or Starq), setting configurations accordingly.
 
@@ -30,6 +32,10 @@ To run the script, execute:
 3. **Repository Cloning**: Clones the GIZMO repository from Bitbucket into the current directory. It has provisions for cloning either a public, private or starforge repository. It inquires which repository the user is interested in before cloning.
 
 4. **Makefile Configuration**: Modifies the `Makefile.systype` file in the newly cloned GIZMO directory. It sets the `SYSTYPE` variable based on the identified system (Niagara or Starq).
+
+#### Key Functionalities (MUSIC/Rockstar setup)
+
+While cloning the repo, the script temporarily moves all the files from original directory (music, rockstar) to temporary directory. After it is done cloning, it moves these files back. This is done so that you can git track files in the music/rockstar directories.
 
 #### Additional Notes
 
