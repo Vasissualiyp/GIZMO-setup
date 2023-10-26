@@ -151,7 +151,10 @@ elif [ "$program_to_setup" == "music" ]; then
 #}}}
 elif [ "$program_to_setup" == "rockstar" ]; then 
 # Make Rockstar {{{
-    module load gcc
+    module load hdf5
+    sed -i '2iCFLAGS += -I/usr/include/tirpc' Makefile
+    sed -i '5iOFLAGS += -ltirpc' Makefile
+    make with_hdf5
 #}}}
 elif [ "$program_to_setup" == "grackle" ]; then 
 # Make GRACKLE {{{
