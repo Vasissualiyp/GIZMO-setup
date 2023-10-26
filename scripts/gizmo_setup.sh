@@ -11,8 +11,8 @@ mkdir archive
 mkdir output
 mkdir last_job
 
-#Step 1: Choose which repository to clone:{{{
 pull_git() {
+# Choose which repository to clone and clone it:{{{
   # Prompt the user to select which repo to clone
   echo "Which repo do you want to clone?"
   echo "1) Public repo"
@@ -60,6 +60,7 @@ pull_git() {
   g)
     git clone https://github.com/grackle-project/grackle.git grackle
     cp ./template/grackle_makefile_cita ./grackle/src/clib/Make.mach.cita || echo "Failed to clone grackle cita Makefile. Please, copy in manually into grackle/src/clib"
+    cd grackle
     program_to_setup="grackle"
     ;;
   *)
@@ -67,12 +68,13 @@ pull_git() {
     return 1
     ;;
   esac
-} #}}}
+#}}}
+}
 
 pull_git
 
-# Rest of GIZMO setup {{{
 if [ "$program_to_setup" == "gizmo" ]; then 
+# Rest of GIZMO setup {{{
     # Step 2: Alter the Makefile.systype
     cd gizmo
     sed -i '/^[^#]/ s/^/#/' Makefile.systype
@@ -143,9 +145,21 @@ if [ "$program_to_setup" == "gizmo" ]; then
     #vim Config.sh
 # }}}
 elif [ "$program_to_setup" == "music" ]; then 
-    module load gcc fftw gsl hdf5
+# Make MUSIC {{{
+    module load gcc hdf5 gsl fftw
+    make -j20
+#}}}
 elif [ "$program_to_setup" == "rockstar" ]; then 
+# Make Rockstar {{{
     module load gcc
+#}}}
 elif [ "$program_to_setup" == "grackle" ]; then 
-    module load gcc
+# Make GRACKLE {{{
+    ./configure
+    cd src/clib
+    module load gcc hdf5
+    make clean
+    make machine-cita
+    make -j20
+#}}}
 fi

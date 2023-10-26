@@ -37,6 +37,10 @@ You then will be prompted with a choice of gizmo repo you would like to clone (1
 
 While cloning the repo, the script temporarily moves all the files from original directory (music, rockstar) to temporary directory. After it is done cloning, it moves these files back. This is done so that you can git track files in the music/rockstar directories.
 
+#### Key Functionalities (MUSIC/Rockstar/GRACKLE)
+
+The script is currently able to compile all of the libraries (GIZMO needs no compilation, since it should be done on a job-by-job basis). Compilation works on Sunnyvale, it has **NOT** been tested on Niagara!
+
 #### Additional Notes
 
 - The script allows for flexibility in choosing which GIZMO repository to clone (public, private, or starforge).
