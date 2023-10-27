@@ -1,62 +1,71 @@
-% Name of the file: Z49TO0_MUSICtest
-% Example compile-time options:
-%  (HYDRO_MESHLESS_FINITE_MASS is optional, replace with your
-%   choice of hydro/mhd options)
-%
-%        HYDRO_MESHLESS_FINITE_MASS
-%        BOX_PERIODIC
-%        EOS_GAMMA=(5.0/3.0)
-%
-% Also the parameters below are usually recommended (but not necessary)
-%
-%        PMGRID=256
-%        MULTIPLEDOMAINS=16
-%        ADAPTIVE_GRAVSOFT_FORGAS
-%
-InitCondFile                       IC.dat
-Initial_Conditions_Format	   1
-OutputDir                          
-TimeBegin                          0.02 % z=49
-TimeMax                            1 % z=0
-ComovingIntegrationOn              1
-Omega_Matter                       1
-Omega_Lambda                       0
-Omega_Baryon                       0
-HubbleParam                        1
-BoxSize                            1000
-ComovingIntegrationOn		   1 % Make this sim cosmological
-%TimeOfFirstSnapshot                0.02
-%TimeBetSnapshot                    0.0005
+% Name of the file: Cosmorun2-dmonly
+
+InitCondFile                       IC_dm+b_maxlvl11.dat 
+Initial_Conditions_Format          1
+SnapFormat			   3
+OutputDir                             
+
+TimeBegin                          0.005 % z=199
+%TimeMax                            0.0625 % z=15 (cosmological). For us, t0=0.27 Gyr
+TimeMax                             0.5 % z=1  %0.3 % z=10, t=0.48 Gyr 
+
+Omega_Matter                       0.276
+Omega_Lambda                       0.724
+Omega_Baryon                       0.0455
+%Omega_Baryon                       0.0
+HubbleParam                        0.703
+
+BoxSize                            1e5 %(in kpc)
+ComovingIntegrationOn              1 % Make this sim non-cosmological
+
+%TimeBetSnapshot                    1e-3 % Keep in mind that this is a scale factor for cosmological sims! And in ~Gyr otherwise
+%TimeOfFirstSnapshot		   0 %For us, t0=0.27 Gyr % z = 39 
 OutputListOn			   1
-OutputListFilename		   snapshot_times.txt
-%ScaleFac_Between_Snapshots        1.05
-MinSizeTimestep                    1e-6
-MaxSizeTimestep                    0.01
+OutputListFilename		   focused_snap_times.txt
+MinSizeTimestep                    1e-13
+MaxSizeTimestep                    5e-3
+%TreeDomainUpdateFrequency    	   0.003
+
 DesNumNgb                          32
+%MaxHsml                 1.0e6    % minimum gas kernel length (some very large value to prevent errors)
+%MinGasHsmlFractional    1.0      % minimum kernel length relative to gas force softening (<= 1)
+
 UnitLength_in_cm                   3.085678e+21
 UnitMass_in_g                      1.989e+43
 UnitVelocity_in_cm_per_s           100000
-SofteningGas                       0 % adjust me depending on adaptive softenings!
-Softening_Type1                    0.0167 % Softening set to 1/30th of the Softening Length
-Softening_Type2                    0 % no type-2 particles
-Softening_Type3                    0 % no type-3 particles
-Softening_Type4                    0 % no type-4 particles
-Softening_Type5                    0 % no type-5 particles
-SofteningGasMaxPhys                0 % adjust me depending on adaptive softenings!
-Softening_Type1_MaxPhysLimit       0
-Softening_Type2_MaxPhysLimit       0.02
-Softening_Type3_MaxPhysLimit       0
-Softening_Type4_MaxPhysLimit       0
-Softening_Type5_MaxPhysLimit       0
+UnitMagneticField_in_gauss         1.0  
+
+Softening_Type0 		   2.5e-4 % High-res gas
+%Softening_Type0 		   0.0 % High-res gas
+Softening_Type1 		   8.0e2  % High-res DM
+Softening_Type2                    0.008 % Low-res DM
+%Softening_Type2                    0.0 % Low-res DM
+Softening_Type3                    1e-10 % no type-3 particles
+Softening_Type4                    0.112 % no type-4 particles
+Softening_Type3                    0.0 % no type-3 particles
+Softening_Type4                    0.0 % no type-4 particles
+Softening_Type5                    0.0 % no type-5 particles
+
+Softening_Type0_MaxPhysLimit 	   2.5e-5
+%Softening_Type0_MaxPhysLimit       0
+Softening_Type1_MaxPhysLimit 	   0.8e2  
+Softening_Type2_MaxPhysLimit       0.008
+%Softening_Type2_MaxPhysLimit       0.0
+Softening_Type3_MaxPhysLimit       1e-11
+Softening_Type4_MaxPhysLimit       0.0112
+Softening_Type3_MaxPhysLimit       0.0
+Softening_Type4_MaxPhysLimit       0.0
+Softening_Type5_MaxPhysLimit       0.0
+
 MinGasTemp                         0.001
+%PartAllocFactor			   3.0
 
+% Star formation parameters
+CritPhysDensity			   1000
+SfEffPerFreeFall		   1.0
 
-MaxMemsize			   
-
-% -- optional numerical parameters (requires additional Config flags)
-%CourantFac                         0.2
-%ArtCondConstant                    0.25
-%ViscosityAMin                      0.025
-%ViscosityAMax                      2
-%MinGasHsmlFractional               1
-
+%---- Magneto-Hydrodynamics Parameters (MAGNETIC on)
+%----- Initial B-Field Strengths (if MHD_B_SET_IN_PARAMS on, otherwise read from IC file)
+%BiniX    1.0e-8    % initial B_x, in code units
+%BiniY    1.0e-8    % initial B_y, in code units
+%BiniZ    1.0e-8    % initial B_z, in code units

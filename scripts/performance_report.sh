@@ -58,10 +58,12 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
     performance_file="${folder}performance_report.csv"
 
     # Obtain redshift
-    scaling_factor=$(tail -n 35 "${folder}"/cpu.txt | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
+    #cpu_usage_file=./output.log
+    cpu_usage_file="${folder}"/cpu.txt
+    scaling_factor=$(tail -n 35 $cpu_usage_file | grep '^Step' | awk '{print $4}' | sed 's/.$//') 
     redshift=$(echo "1/$scaling_factor - 1" | bc -l)
     redshift_round=$(printf "%.2f\n" $redshift)
-    scaling_factor_round=$(printf "%.2f\n" $scaling_factor)
+    scaling_factor_round=$(printf "%.5f\n" $scaling_factor)
     
     # Echo the current state of the sim
     echo "Current folder: ${folder}"
