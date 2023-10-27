@@ -257,7 +257,7 @@ track_changes() { #{{{
     # Conditionally append files if they exist
     [ -f "./gizmo/Config.sh" ] && files_to_compare+=("./gizmo/Config.sh") || echo "no Config file was found"
     [ -f "./template/zel.params" ] && files_to_compare+=("./template/zel.params") || echo "no parameters file was found"
-    [ -f "./music/dm+b_ics.conf" ] && files_to_compare+=("./music/dm+b_ics.conf") || echo "no music file was found"
+    [ -f "./music/music_ics.conf" ] && files_to_compare+=("./music/music_ics.conf") || echo "no music file was found"
     
     no_changes=true
 
