@@ -1,5 +1,5 @@
 # DOCUMENTATION.md
-**This Documentation was last updated on 2023.10.26**
+**This Documentation was last updated on 2023.11.20**
 
 ## GIZMO Setup Scripts
 
@@ -73,42 +73,60 @@ To run the script, navigate to the root directory and execute:
 
 ## Submission Scripts
 
-### `compile_autosub.sh`
+### compile_autosub.sh Script Documentation
 
-#### Description
+This document provides a comprehensive explanation of the `compile_autosub.sh` shell script. The script is used for automating the process of configuring, compiling, and submitting GIZMO simulation jobs to a computing cluster.
 
-`compile_autosub.sh` is a Bash script designed to automate the submission and management of GIZMO simulation jobs on a cluster. It supports various configuration files including `Config.sh`, `zel.params`, and `dm+b_ics.conf` for MUSIC initial conditions.
+#### Script Functions
 
-#### Usage
+##### extract_config()
+Extracts simulation configurations from `configs.txt` and stores them into arrays. It looks specifically for lines starting with `Config.sh:` and `zel.params:` and adds the extracted configurations to their respective arrays.
 
-To execute the script, run:
+##### update_zel_params(param_string)
+Updates `zel.params` with given parameters. If a parameter starts with a dash (`-`), it is removed from the file. Otherwise, the parameter is either updated or appended.
 
-```bash
-./compile_autosub.sh
-```
+##### update_softening_zel_params(param_string)
+Specifically handles the softening parameters in `zel.params`. It sets the softening length and its max physical limit for particle type 0, and does the same for particle type 1 with a value ten times larger.
 
-#### Key Functionalities
+##### get_name()
+Determines the name of the job by extracting it from the first line of `zel.params`.
 
-1. **System Identification**: The script identifies the host system (Niagara or Starq) based on the hostname for cluster-specific configurations.
+##### get_date_time()
+Fetches the current date and time for timestamping purposes.
 
-2. **Configuration Extraction**: It reads a `configs.txt` file to parse configurations for `Config.sh`, `zel.params`, and `dm+b_ics.conf`.
+##### get_attempt()
+Determines the attempt number for the current day by inspecting `zel.params` for an output directory matching today's date.
 
-3. **Parameter File Management**: Updates and customizes parameter files like `zel.params` and `dm+b_ics.conf` based on the extracted configurations. These files are copied from a `template` directory to a newly created directory.
+##### copy_and_modify_params()
+Copies `zel.params` from the `template` directory and modifies the output directory line with the current date and attempt number.
 
-4. **Dynamic Directory Creation**: A new directory is created based on the current date and an "attempt" counter, which increments for multiple job submissions on the same day.
+##### modify_params(index)
+Applies parameter changes stored in the `zel_parameters` array at the specified index to `zel.params`.
 
-5. **Run Script Handling**: The script fetches and customizes the appropriate run script (`run.sh` or `run-starq.sh`) from the `template` directory based on the host system.
+##### modify_and_submit_job()
+Handles the final preparations for job submission, including creating a binary directory, modifying the job submission script, and invoking the cluster's job submission command.
 
-6. **Job Submission**: Submits the job to the cluster after preparing all necessary files.
+##### write_job_id()
+Writes the job ID of the submitted job to an archive file for tracking purposes.
 
-7. **Archiving**: An archiving mechanism is included to move old simulation files to an archive directory, maintaining an organized workspace.
+##### track_changes()
+Compares current configuration files with the last job's files to detect and log any changes.
 
-8. **Logging**: Various details like attempt number, job ID, and changes are logged into a text file within the archive directory.
+##### autosub()
+Main function that orchestrates the auto-submission process. It calls other functions as needed based on whether there are parameter changes to apply.
 
-#### Additional Notes
+##### update_config(args)
+Updates the `Config.sh` file with the provided arguments by either appending new configurations or updating existing ones.
 
-- The script uses associative arrays to store configurations and parameters, allowing for easy management and updates.
-- Error checks and validations are included at different stages to ensure robust functioning.
+##### compilation()
+Compiles the GIZMO code by loading necessary modules and invoking the `make` command.
+
+#### Main Execution Flow
+The script's main execution flow orchestrates the process of extracting configuration changes, compiling GIZMO with these changes if necessary, and submitting the job to the cluster. It handles different scenarios based on the contents of `configs.txt`.
+
+#### Additional Details
+Each function includes detailed comments explaining its logic, the expected input, and the side effects (e.g., file modifications, variable updates). The script is robust to handle different cluster environments and is structured to provide easy tracking and logging of each submission attempt.
+
 
 ## Job Management Scripts
 
