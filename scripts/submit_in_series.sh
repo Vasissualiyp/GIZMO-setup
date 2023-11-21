@@ -16,6 +16,7 @@ change_number_of_processes_starq() { #{{{
     
     # Your new node count
     local new_nodes="$1" # The new number of nodes
+    #echo "$new_nodes"
     
     # Calculate new number of processes
     new_processes=$((new_nodes * ppn / openmp_threads))
@@ -59,7 +60,7 @@ get_nodes() { #{{{
 
     # Read the first line (the first integer) and store it in a variable
     read -r nodes_number < "$file_path"
-    #echo "$nodes_number"
+    echo "$nodes_number" # THIS IS REQUIRED FOR THE CODE TO RUN!
 
     # Remove the first line from the file
     sed -i '1d' "$file_path"
@@ -67,6 +68,7 @@ get_nodes() { #{{{
 
 
 main() { #{{{
+\cp -f nodenumbers.txt.bak nodenumbers.txt
 while true; do
 	if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
 		#clear
@@ -96,11 +98,10 @@ while true; do
 	    if [ ${#nodes_number} -gt 10 ]; then
 		exit 0
 	    else
+		echo "Nodes number: $nodes_number"
 	        update_nodes "$nodes_number"  # Update the number of nodes in run.sh
+	        ./compile_autosub.sh
 	    fi
-
-	    #echo "Done"
-	    ./compile_autosub.sh
 	fi
 
         sleep $sleeptime 
