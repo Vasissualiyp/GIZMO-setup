@@ -27,17 +27,17 @@ pull_git() {
   case $choice in
     1)
 		mkdir gizmo
-    git clone git@bitbucket.org:phopkins/gizmo-public.git gizmo
+    git clone git@bitbucket.org:phopkins/gizmo-public.git gizmo || echo "Failed to copy GIZMO - make sure to add your machine's ssh key on BitBucket"
     program_to_setup="gizmo"
     ;;
   2)
 	  mkdir gizmo
-    git clone git@bitbucket.org:phopkins/gizmo.git
+    git clone git@bitbucket.org:phopkins/gizmo.git || echo "Failed to copy GIZMO - make sure to add your machine's ssh key on BitBucket"
     program_to_setup="gizmo"
     ;;
   3)
 	  mkdir gizmo
-    git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo 
+    git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo  || echo "Failed to copy GIZMO - make sure to add your machine's ssh key on BitBucket"
     program_to_setup="gizmo"
     ;;
   m)
