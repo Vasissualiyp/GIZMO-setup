@@ -206,7 +206,26 @@ modify_and_submit_job() { #{{{
         #echo "Submission complete. Continuing in a second..."
         echo "Submission complete"
         #sleep 1
-	#}}}
+	  #}}}
+    # Submit into starq on Vas-Office-EOS {{{
+    elif [[ "$systemname" == "Vas-Office-EOS" ]]; then 
+        cp ./template/run-starq.sh ./run.sh
+        sed -i -e "s|^MaxMemSize*|MaxMemSize\t\t\t\t4500|" zel.params
+        echo "Modifications completed successfully."
+
+        # Move the files to the archive directory and update the mpirun command
+        for file_path in "${file_paths[@]}"; do
+            if [ -f "$file_path" ]; then
+                cp "$file_path" "$bin_dir"
+                mpirun_command=${mpirun_command//$file_path/$bin_dir/$(basename $file_path)}
+								echo "MPIrun command is:"
+								echo "$mpirun_command"
+                cp ./run.sh "$bin_dir"
+            fi
+        done
+
+        qsub run.sh 
+	  #}}}
     # Submit into starq on Sunnyvale {{{
     else 
         cp ./template/run-starq.sh ./run.sh
