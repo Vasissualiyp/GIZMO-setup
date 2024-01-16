@@ -26,15 +26,18 @@ pull_git() {
   # Clone the selected repo
   case $choice in
     1)
+		mkdir gizmo
     git clone git@bitbucket.org:phopkins/gizmo-public.git gizmo
     program_to_setup="gizmo"
     ;;
   2)
+	  mkdir gizmo
     git clone git@bitbucket.org:phopkins/gizmo.git
     program_to_setup="gizmo"
     ;;
   3)
-    git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo
+	  mkdir gizmo
+    git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo 
     program_to_setup="gizmo"
     ;;
   m)
