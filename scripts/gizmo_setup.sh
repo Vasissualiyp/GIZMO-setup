@@ -54,7 +54,7 @@ pull_git() {
     # Create temporary directory to store git-tracked parts of rockstar
     mkdir rockstartmp
     mv -r rockstar/* rockstartmp/
-    git clone git@bitbucket.org:gfcstanford/rockstar.git rockstar
+    git clone https://github.com/Vasissualiyp/rockstar-gizmo.git rockstar
     mv -r rockstartmp/* rockstar/
     rm -rf rockstartmp
     cd rockstar
@@ -153,6 +153,7 @@ elif [ "$program_to_setup" == "music" ]; then
 # Make MUSIC {{{
     module load gcc hdf5 gsl fftw
     make -j20
+		cp ../template/*.conf ./
 #}}}
 elif [ "$program_to_setup" == "rockstar" ]; then 
 # Make Rockstar {{{
@@ -160,6 +161,7 @@ elif [ "$program_to_setup" == "rockstar" ]; then
     sed -i '2iCFLAGS += -I/usr/include/tirpc' Makefile
     sed -i '5iOFLAGS += -ltirpc' Makefile
     make with_hdf5
+		cp ../template/rockstar.cfg ./rockstar.cfg
 #}}}
 elif [ "$program_to_setup" == "grackle" ]; then 
 # Make GRACKLE {{{
