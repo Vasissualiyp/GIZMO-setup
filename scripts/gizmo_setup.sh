@@ -140,7 +140,7 @@ if [ "$program_to_setup" == "gizmo" ]; then
     wget http://www.tapir.caltech.edu/~phopkins/public/spcool_tables.tgz
     mkdir -p spcool_tables
     tar -xzvf spcool_tables.tgz -C spcool_tables
-    mv spcool_tables/spcool_tables/* ./
+    mv spcool_tables/spcool_tables/* ./spcool_tables/
     rm -rf spcool_tables/spcool_tables
     rm -f -r spcool_tables.tgz
     cd gizmo
