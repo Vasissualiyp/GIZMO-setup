@@ -18,6 +18,7 @@ pull_git() {
   echo "1) Public repo"
   echo "2) Private repo"
   echo "3) Starforge repo"
+  echo "a) GIZMO analysis"
   echo "m) MUSIC (Cosmological ICs generation)"
   echo "r) Rockstar (Halo Finder)"
   echo "g) GRACKLE (Thermochemistry library)"
@@ -40,11 +41,16 @@ pull_git() {
     git clone git@bitbucket.org:guszejnov/gizmo_imf.git gizmo  || echo "Failed to copy GIZMO - make sure to add your machine's ssh key on BitBucket"
     program_to_setup="gizmo"
     ;;
+  a)
+	  mkdir analysis
+    git clone https://github.com/Vasissualiyp/GIZMO-analysis.git analysis  || echo "Failed to git clone the analysis directory"
+    program_to_setup="gizmo"
+    ;;
   m)
     # Create temporary directory to store git-tracked parts of music
     mkdir musictmp
     mv -r music/* musictmp/
-    git clone git@bitbucket.org:ohahn/music.git
+    git clone git@bitbucket.org:ohahn/music.git || echo "Failed to git clone music"
     mv -r musictmp/* music/
     rm -rf musictmp
     cd music
@@ -54,14 +60,14 @@ pull_git() {
     # Create temporary directory to store git-tracked parts of rockstar
     mkdir rockstartmp
     mv -r rockstar/* rockstartmp/
-    git clone https://github.com/Vasissualiyp/rockstar-gizmo.git rockstar
+    git clone https://github.com/Vasissualiyp/rockstar-gizmo.git rockstar || echo "Failed to git clone rockstar"
     mv -r rockstartmp/* rockstar/
     rm -rf rockstartmp
     cd rockstar
     program_to_setup="rockstar"
     ;;
   g)
-    git clone https://github.com/grackle-project/grackle.git grackle
+    git clone https://github.com/grackle-project/grackle.git grackle || echo "Failed to git clone grackle"
     cp ./template/grackle_makefile_cita ./grackle/src/clib/Make.mach.cita || echo "Failed to clone grackle cita Makefile. Please, copy in manually into grackle/src/clib"
     cd grackle
     program_to_setup="grackle"
