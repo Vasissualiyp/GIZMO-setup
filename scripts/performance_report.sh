@@ -53,7 +53,8 @@ while [ "$SECONDS" -lt "$TARGET_TIME" ]; do
   # Check if the folder exists
   if [ -d "${folder}" ]; then
     # Count the number of snapshots and subtract 1
-    snapshot_count=$(ls "${folder}"snapshot_*.hdf5 2>/dev/null | wc -l)
+    #snapshot_count=$(ls "${folder}"snapshot_*.hdf5 2>/dev/null | wc -l)
+    snapshot_count=$(find "${folder}" -type f -name "snapshot_*.hdf5" -o -type d -name "snapdir_*" 2>/dev/null | wc -l)
     snapshot_count_minus_one=$((snapshot_count - 1))
     performance_file="${folder}performance_report.csv"
 
