@@ -30,7 +30,6 @@ generate_ics() {
 
   ics_filename="ICs_${seed_lvl}_$seed"
 
-  rm "./music/$music_conf"
   cp "$template_config" "./music/$music_conf"
 
   cd ./music || { echo "No MUSIC directory. Make sure to set it up"; exit 1; }
@@ -61,11 +60,9 @@ run_gizmo() {
   sed -i "1s/.*/% Name of the file: $ics_filename/" "$params_file" # Changes the name of the job
   escaped_ics_path=$(printf '%s\n' "$ics_path" | sed 's:/:\\/:g')
   echo "$escaped_ics_path"
-  sed -i "/^InitCondFile/c\InitCondFile\t\t\t\t./$escaped_ics_path" "$params_file"
-  exit
+  sed -i "/^InitCondFile/c\InitCondFile\t\t\t\t$escaped_ics_path" "$params_file"
 
-
-  # Insert command to run GIZMO with the specified ICs and parameter file here.
+  ./compile_autosub.sh
 }
 
 # Monitors the GIZMO simulation process, checking periodically to see if it is still active.
