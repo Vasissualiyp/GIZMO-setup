@@ -1,5 +1,51 @@
 #!/bin/bash
 
+
+systemname=$(hostname)
+
+# function to process squeue for Niagara 
+function run_squeue {
+  echo "Here are your currently running jobs:"
+  data=$(squeue -u $USER -o "%.18i %.10M" --noheader)
+  readarray -t lines <<<"$data"
+
+  for i in "${!lines[@]}"; do
+    echo "$((i+1)): ${lines[i]}"
+  done
+}
+
+
+# Helper function to check if there are jobs running 
+function are_jobs_running {
+  # Depending on the system, set the appropriate command to check jobs
+  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    data=$(squeue -u $USER --noheader)
+  else
+    data=$(qstat -u $USER | awk 'NR > 5')
+  fi
+
+  # If data is not empty, jobs are running
+  [[ -n "$data" ]]
+}
+
+
+# function to process qstat for Sunnyvale 
+function run_qstat {
+  if ! command -v qstat &> /dev/null; then
+    echo "Please ssh to ricky to run this script"
+    exit 1
+  fi
+  echo "Here are your currently running jobs:"
+
+  data=$(qstat -u $USER | awk 'NR > 5 {split($1, a, "."); print a[1] " " $NF}')
+  readarray -t lines <<<"$data"
+
+  for i in "${!lines[@]}"; do
+    echo "$((i+1)): ${lines[i]}"
+  done
+}
+
+
 # Initializes the script environment, setting up necessary variables, directories, and templates.
 # It also prepares the environment by loading required modules or setting software paths,
 # ensuring that all subsequent operations can be executed smoothly.
@@ -63,16 +109,22 @@ run_gizmo() {
   sed -i "/^InitCondFile/c\InitCondFile\t\t\t\t$escaped_ics_path" "$params_file"
 
   ./compile_autosub.sh
+
+  snapshots_dir=$(grep 'OutputDir' ./zel.params | awk '{print }') # get the directory for the snapshots
 }
 
 # Monitors the GIZMO simulation process, checking periodically to see if it is still active.
 # This function is crucial for determining when a simulation has completed, allowing the
 # script to proceed with post-processing steps. The method of monitoring (e.g., checking process
 # existence or file output) should be chosen based on the specifics of the GIZMO execution environment.
-monitor_gizmo() {
-  echo "Monitoring GIZMO process..."
+function monitor_gizmo {
+  echo "Monitoring running jobs..."
   cd "$MAIN_DIR" 
-  # Insert process monitoring commands here, adjusting as necessary for your environment.
+  while are_jobs_running; do
+    echo "Jobs are still running. Waiting..."
+    sleep 60  # Wait for 60 seconds before checking again
+  done
+  echo "No more running jobs. Proceeding..."
 }
 
 # Processes the output of a completed GIZMO simulation, typically by moving or organizing
@@ -82,7 +134,8 @@ monitor_gizmo() {
 #   1. Output directory - The directory where processed output should be stored.
 process_output() {
   local output_dir="$1"
-  echo "Processing output to ${output_dir}..."
+  local snapshots_dir="$2"
+  echo "Processing output from ${snapshots_dir} to ${output_dir}..."
   cd "$MAIN_DIR" 
   # Insert commands to move or organize GIZMO output here.
 }
@@ -133,11 +186,12 @@ main() {
   local template_config="./template/largest_halo/dm_only_ics.conf"
   local template_gizmo_params="./template/largest_halo/gizmo.params"
   local params_file="./template/zel.params"
+  local output_dir="./"
   for seed in "${seeds[@]}"; do
-    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf"
+    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" # ics_filename is defined in generate_ics()
     run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
     monitor_gizmo
-    process_output "output_dir"
+	process_output "$output_dir" "${snapshots_dir}" # snapshots_dir is defined in run_gizmo()
     run_rockstar "snapshots_dir" 30 15 4
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
