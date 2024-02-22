@@ -25,12 +25,10 @@ generate_ics() {
   local seed_lvl="$2"
   local template_config="$3"
   local music_conf="$4"
-
-  ics_filename="ICs_${seed_lvl}_$seed.dat"
-
   echo "Generating ICs for seed ${seed} at the level ${seed_lvl} using template ${template_config}..."
-
   cd "$MAIN_DIR" 
+
+  ics_filename="ICs_${seed_lvl}_$seed"
 
   rm "./music/$music_conf"
   cp "$template_config" "./music/$music_conf"
@@ -39,11 +37,9 @@ generate_ics() {
 
   #sed -i "s/seed\[$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would replace any seed lvl
   sed -i "s/seed\[\$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would only replace a certain seed lvl
-  sed -i "/.*IC.*/c\filename = ../$ics_filename" "./$music_conf" # sets appropriate output filename
+  sed -i "/.*IC.*/c\filename = ../$ics_filename.dat" "./$music_conf" # sets appropriate ICs filename
 
   ./MUSIC "./$music_conf" && echo "ICs have been created!"
-  cd ..
-  # Insert command to modify template configuration and generate ICs here.
 }
 
 # Runs the GIZMO simulation with the generated initial conditions and a set of parameters.
@@ -56,7 +52,14 @@ generate_ics() {
 run_gizmo() {
   local ics_path="$1"
   local template_params="$2"
+  local params_file="$3"
   echo "Running GIZMO with ${ics_path} and parameters from ${template_params}..."
+  cd "$MAIN_DIR" 
+
+  rm "$params_file"
+  cp "$template_config" "$params_file"
+  sed -i "1s/.*/% Name of the file: $ics_filename/" "$params_file" # Changes the name of the job
+
 
   # Insert command to run GIZMO with the specified ICs and parameter file here.
 }
@@ -67,6 +70,7 @@ run_gizmo() {
 # existence or file output) should be chosen based on the specifics of the GIZMO execution environment.
 monitor_gizmo() {
   echo "Monitoring GIZMO process..."
+  cd "$MAIN_DIR" 
   # Insert process monitoring commands here, adjusting as necessary for your environment.
 }
 
@@ -78,6 +82,7 @@ monitor_gizmo() {
 process_output() {
   local output_dir="$1"
   echo "Processing output to ${output_dir}..."
+  cd "$MAIN_DIR" 
   # Insert commands to move or organize GIZMO output here.
 }
 
@@ -92,6 +97,7 @@ run_rockstar() {
   shift # Remove the first argument, leaving only redshifts.
   local redshifts=("$@") # Remaining arguments are redshifts.
   echo "Running Rockstar on snapshots in ${snapshots_dir} for redshifts: ${redshifts[*]}..."
+  cd "$MAIN_DIR" 
   # Insert command to run Rockstar and extract halo information here.
 }
 
@@ -111,6 +117,7 @@ log_info() {
   local redshift="$4"
   local halo_size="$5"
   echo "Logging information for seed ${seed}..."
+  cd "$MAIN_DIR" 
   # Insert command to log information to a CSV file here.
 }
 
@@ -123,9 +130,11 @@ main() {
   local seed_lvl=7 
   local music_conf="largest_halo.conf"
   local template_config="./template/largest_halo/dm_only_ics.conf"
+  local template_gizmo_params="./template/largest_halo/gizmo.params"
+  local params_file="./template/zel.params"
   for seed in "${seeds[@]}"; do
     generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf"
-    run_gizmo "ics_path" "template_params.conf"
+    run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
     monitor_gizmo
     process_output "output_dir"
     run_rockstar "snapshots_dir" 30 15 4
@@ -136,4 +145,4 @@ main() {
 
 # Execute the main function with all passed arguments.
 main "$@"
-
+                                                                                                                   
