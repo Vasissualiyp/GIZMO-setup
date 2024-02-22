@@ -6,6 +6,12 @@
 initialize_environment() {
   echo "Initializing environment..."
   # Add environment setup commands here, like module loads or directory creation.
+  # This works for Sunnyvale:
+  #module purge; module load gcc openmpi/4.1.6-intel-ucx gsl hdf5 fftw/3.3.10
+
+  # Get the directory where the script is located
+  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+  MAIN_DIR="$( cd "$SCRIPT_DIR/.." && pwd )" # Get into the folder with music, rockstar, etc.
 }
 
 # Generates initial conditions (ICs) for a GIZMO simulation using a specified seed and a template
@@ -16,8 +22,27 @@ initialize_environment() {
 #   2. Template configuration file path - The path to the template configuration file.
 generate_ics() {
   local seed="$1"
-  local template_config="$2"
-  echo "Generating ICs for seed ${seed} using template ${template_config}..."
+  local seed_lvl="$2"
+  local template_config="$3"
+  local music_conf="$4"
+
+  ics_filename="ICs_${seed_lvl}_$seed"
+
+  echo "Generating ICs for seed ${seed} at the level ${seed_lvl} using template ${template_config}..."
+
+  cd "$MAIN_DIR" 
+
+  rm "./music/$music_conf"
+  cp "$template_config" "./music/$music_conf"
+
+  cd ./music || { echo "No MUSIC directory. Make sure to set it up"; exit 1; }
+
+  #sed -i "s/seed\[$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would replace any seed lvl
+  sed -i "s/seed\[\$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would only replace a certain seed lvl
+  sed -i "/filename = .*IC.*/c\filename = $ics_filename" "./$music_conf" # sets appropriate output filename
+
+  ./MUSIC "./$music_conf" && echo "ICs have been created!"
+  cd ..
   # Insert command to modify template configuration and generate ICs here.
 }
 
@@ -32,6 +57,7 @@ run_gizmo() {
   local ics_path="$1"
   local template_params="$2"
   echo "Running GIZMO with ${ics_path} and parameters from ${template_params}..."
+
   # Insert command to run GIZMO with the specified ICs and parameter file here.
 }
 
@@ -94,8 +120,10 @@ log_info() {
 main() {
   initialize_environment
   local seeds=(1 2 3) # Example seed array. Replace or extend as required.
+  local seed_lvl=7 
+  local music_conf=large_halo_conf
   for seed in "${seeds[@]}"; do
-    generate_ics "$seed" "template_config.conf"
+    generate_ics "$seed" "$seed_lvl" "template_config.conf" "$music_conf"
     run_gizmo "ics_path" "template_params.conf"
     monitor_gizmo
     process_output "output_dir"
