@@ -26,7 +26,7 @@ generate_ics() {
   local template_config="$3"
   local music_conf="$4"
 
-  ics_filename="ICs_${seed_lvl}_$seed"
+  ics_filename="ICs_${seed_lvl}_$seed.dat"
 
   echo "Generating ICs for seed ${seed} at the level ${seed_lvl} using template ${template_config}..."
 
@@ -39,7 +39,7 @@ generate_ics() {
 
   #sed -i "s/seed\[$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would replace any seed lvl
   sed -i "s/seed\[\$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would only replace a certain seed lvl
-  sed -i "/filename = .*IC.*/c\filename = $ics_filename" "./$music_conf" # sets appropriate output filename
+  sed -i "/.*IC.*/c\filename = ../$ics_filename" "./$music_conf" # sets appropriate output filename
 
   ./MUSIC "./$music_conf" && echo "ICs have been created!"
   cd ..
@@ -119,11 +119,12 @@ log_info() {
 # processing the output, running Rockstar to find the largest haloes, and logging all relevant information.
 main() {
   initialize_environment
-  local seeds=(1 2 3) # Example seed array. Replace or extend as required.
+  local seeds=(11235 24654 33212) # Example seed array. Replace or extend as required.
   local seed_lvl=7 
-  local music_conf=large_halo_conf
+  local music_conf="largest_halo.conf"
+  local template_config="./template/largest_halo/dm_only_ics.conf"
   for seed in "${seeds[@]}"; do
-    generate_ics "$seed" "$seed_lvl" "template_config.conf" "$music_conf"
+    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf"
     run_gizmo "ics_path" "template_params.conf"
     monitor_gizmo
     process_output "output_dir"
