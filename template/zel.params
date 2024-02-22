@@ -1,13 +1,13 @@
-% Name of the file: Cosmorun2-dmonly
+% Name of the file: ICs_7_11235
 
-InitCondFile                       /home/vasilii/research/sims/FIRE_TEST/snapshot_000
+InitCondFile		.//home/vasilii/Software/GIZMO/ICs_7_11235.dat
 Initial_Conditions_Format          3
-SnapFormat			   3
-OutputDir                             
+SnapFormat                         3
+OutputDir
 
 TimeBegin                          0.01 % z=99
 %TimeMax                            0.0625 % z=15 (cosmological). For us, t0=0.27 Gyr
-TimeMax                             0.2 % z=9 
+TimeMax                             0.2 % z=9
 
 Omega_Matter                       0.21 %0.276
 Omega_Lambda                       0.79 %0.724
@@ -19,12 +19,12 @@ BoxSize                            6e5 %(in kpc)
 ComovingIntegrationOn              1 % 1 = Make this sim cosmological
 
 %TimeBetSnapshot                    0.01 % Keep in mind that this is a scale factor for cosmological sims! And in ~Gyr otherwise
-%TimeOfFirstSnapshot		   0 %For us, t0=0.27 Gyr % z = 39 
-%OutputListOn			   1
-%OutputListFilename		             focused_snap_times.txt
+%TimeOfFirstSnapshot               0 %For us, t0=0.27 Gyr % z = 39
+%OutputListOn                      1
+%OutputListFilename                          focused_snap_times.txt
 MinSizeTimestep                    1e-13
 MaxSizeTimestep                    5e-3
-%TreeDomainUpdateFrequency    	   0.003
+%TreeDomainUpdateFrequency         0.003
 
 DesNumNgb                          32
 %MaxHsml                 1.0e6    % minimum gas kernel length (some very large value to prevent errors)
@@ -33,11 +33,11 @@ DesNumNgb                          32
 UnitLength_in_cm                   3.085678e+21
 UnitMass_in_g                      1.989e+43
 UnitVelocity_in_cm_per_s           100000
-UnitMagneticField_in_gauss         1.0  
+UnitMagneticField_in_gauss         1.0
 
-%Softening_Type0 		   				     4.5e-4 % High-res gas %0.45pc
-Softening_Type0 		   				     0.0 % High-res gas
-Softening_Type1 		   				     4e3% High-res DM
+%Softening_Type0                                                     4.5e-4 % High-res gas %0.45pc
+Softening_Type0                                                      0.0 % High-res gas
+Softening_Type1                                                      4e3% High-res DM
 %Softening_Type2                    120 % Low-res DM
 Softening_Type2                    0.0 % Low-res DM
 %Softening_Type3                    1e-10 % no type-3 particles
@@ -46,9 +46,9 @@ Softening_Type3                    0.0 % no type-3 particles
 Softening_Type4                    0.0 % no type-4 particles
 Softening_Type5                    0.0 % no type-5 particles
 
-%Softening_Type0_MaxPhysLimit 	   4.5e-5
+%Softening_Type0_MaxPhysLimit      4.5e-5
 Softening_Type0_MaxPhysLimit       0
-Softening_Type1_MaxPhysLimit 	   4e2
+Softening_Type1_MaxPhysLimit       4e2
 %Softening_Type2_MaxPhysLimit       12
 Softening_Type2_MaxPhysLimit       0.0
 %Softening_Type3_MaxPhysLimit       1e-11
@@ -58,11 +58,11 @@ Softening_Type4_MaxPhysLimit       0.0
 Softening_Type5_MaxPhysLimit       0.0
 
 MinGasTemp                         0.001
-PartAllocFactor			   1.2
+PartAllocFactor                    1.2
 
 % Star formation parameters
-CritPhysDensity			   1000
-SfEffPerFreeFall		   1.0
+CritPhysDensity                    1000
+SfEffPerFreeFall                   1.0
 
 
 %---- Magneto-Hydrodynamics Parameters (MAGNETIC on)
