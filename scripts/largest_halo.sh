@@ -3,49 +3,6 @@
 
 systemname=$(hostname)
 
-# function to process squeue for Niagara 
-function run_squeue {
-  echo "Here are your currently running jobs:"
-  data=$(squeue -u $USER -o "%.18i %.10M" --noheader)
-  readarray -t lines <<<"$data"
-
-  for i in "${!lines[@]}"; do
-    echo "$((i+1)): ${lines[i]}"
-  done
-}
-
-
-# Helper function to check if there are jobs running 
-function are_jobs_running {
-  # Depending on the system, set the appropriate command to check jobs
-  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
-    data=$(squeue -u $USER --noheader)
-  else
-    data=$(qstat -u $USER | awk 'NR > 5')
-  fi
-
-  # If data is not empty, jobs are running
-  [[ -n "$data" ]]
-}
-
-
-# function to process qstat for Sunnyvale 
-function run_qstat {
-  if ! command -v qstat &> /dev/null; then
-    echo "Please ssh to ricky to run this script"
-    exit 1
-  fi
-  echo "Here are your currently running jobs:"
-
-  data=$(qstat -u $USER | awk 'NR > 5 {split($1, a, "."); print a[1] " " $NF}')
-  readarray -t lines <<<"$data"
-
-  for i in "${!lines[@]}"; do
-    echo "$((i+1)): ${lines[i]}"
-  done
-}
-
-
 # Initializes the script environment, setting up necessary variables, directories, and templates.
 # It also prepares the environment by loading required modules or setting software paths,
 # ensuring that all subsequent operations can be executed smoothly.
@@ -110,7 +67,7 @@ run_gizmo() {
 
   ./compile_autosub.sh
 
-  snapshots_dir=$(grep 'OutputDir' ./zel.params | awk '{print }') # get the directory for the snapshots
+  snapshots_date=$(grep 'OutputDir' ./zel.params | awk '{print $2}' | awk -F '/' '{print $3}') # get the directory for the snapshots (in ./output)
 }
 
 # Monitors the GIZMO simulation process, checking periodically to see if it is still active.
@@ -127,17 +84,83 @@ function monitor_gizmo {
   echo "No more running jobs. Proceeding..."
 }
 
+# function to process squeue for Niagara 
+function run_squeue {
+  echo "Here are your currently running jobs:"
+  data=$(squeue -u $USER -o "%.18i %.10M" --noheader)
+  readarray -t lines <<<"$data"
+
+  for i in "${!lines[@]}"; do
+    echo "$((i+1)): ${lines[i]}"
+  done
+}
+
+
+# Helper function to check if there are jobs running 
+function are_jobs_running {
+  # Depending on the system, set the appropriate command to check jobs
+  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    data=$(squeue -u $USER --noheader)
+  else
+    data=$(qstat -u $USER | awk 'NR > 5')
+  fi
+
+  # If data is not empty, jobs are running
+  [[ -n "$data" ]]
+}
+
+
+# function to process qstat for Sunnyvale 
+function run_qstat {
+  if ! command -v qstat &> /dev/null; then
+    echo "Please ssh to ricky to run this script"
+    exit 1
+  fi
+  echo "Here are your currently running jobs:"
+
+  data=$(qstat -u $USER | awk 'NR > 5 {split($1, a, "."); print a[1] " " $NF}')
+  readarray -t lines <<<"$data"
+
+  for i in "${!lines[@]}"; do
+    echo "$((i+1)): ${lines[i]}"
+  done
+}
+
 # Processes the output of a completed GIZMO simulation, typically by moving or organizing
 # simulation snapshot files into a designated directory. This organization facilitates easier
 # access to simulation results for analysis or further processing.
 # Arguments:
 #   1. Output directory - The directory where processed output should be stored.
 process_output() {
-  local output_dir="$1"
-  local snapshots_dir="$2"
-  echo "Processing output from ${snapshots_dir} to ${output_dir}..."
+  local parent_output_dir="$1"
+  local snapshots_date="$2"
+  local redshifts_file="$3"
+  echo "Processing output from ${snapshots_date}..."
   cd "$MAIN_DIR" 
-  # Insert commands to move or organize GIZMO output here.
+  output_dir="output/${snapshots_date}"
+  rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
+  obtain_redshifts_of_snapshots "./$output_dir" "$redshifts_file"
+}
+
+obtain_redshifts_of_snapshots () {
+  local output_dir=".$1"
+  local redshifts_file=".$2"
+  cd ./analysis || { echo "You need the analysis directory to determine the redshifts of the snapshots"; exit 1; }
+  source ./env/bin/activate || { module load python; python -m venv env; source ./env/bin/activate; pip install h5py; } # Create python env if it's not there 
+  # Iterate over .hdf5 files in output_dir
+  rm "$redshifts_file"
+  echo "Snapshotfile,Redshift" > "$redshifts_file"
+  for snapshot_file in "$output_dir"/*.hdf5; do
+      # Ensure that it's a file before processing
+      if [[ -f "$snapshot_file" ]]; then
+          # Extract the desired information from the last word of the last line of the script's output
+          snapshot_header_data=$(python hdf5_utilities/hdf5_reader_header.py "$snapshot_file" | tail -n 1 | awk '{print $NF}')
+		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}')
+		  echo "$snapshot_file, $redshift" >> "$redshifts_file"
+      fi
+  done
+  echo "Redshifts were found for each of the snapshot files:"
+  cat "$redshifts_file"
 }
 
 # Runs the Rockstar halo finder on the simulation snapshots to identify the largest haloes
@@ -182,16 +205,21 @@ main() {
   initialize_environment
   local seeds=(11235 24654 33212) # Example seed array. Replace or extend as required.
   local seed_lvl=7 
-  local music_conf="largest_halo.conf"
-  local template_config="./template/largest_halo/dm_only_ics.conf"
-  local template_gizmo_params="./template/largest_halo/gizmo.params"
-  local params_file="./template/zel.params"
-  local output_dir="./"
+  local music_conf="largest_halo.conf" # The location of the music file, which will be creating ICs
+  local template_config="./template/largest_halo/dm_only_ics.conf" # The location of the template music file
+  local template_gizmo_params="./template/largest_halo/gizmo.params" # The location of the template parameters file
+  local params_file="./template/zel.params" # The location of the parameters file, which will be submitted
+  local parent_output_dir="./archive" # The parent location of rockstar output
+  local redshifts_file="./template/largest_halo/redshifts.csv" # The file with all the redshifts
   for seed in "${seeds[@]}"; do
-    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" # ics_filename is defined in generate_ics()
+    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
+    # The function above defines ics_filename
     run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
+    # The function above defines output_dir 
     monitor_gizmo
-	process_output "$output_dir" "${snapshots_dir}" # snapshots_dir is defined in run_gizmo()
+    # The function above defines snapshots_date
+	process_output "$parent_output_dir" "$snapshots_date" "$redshifts_file"
+    # The function above defines rockstar_output_dir
     run_rockstar "snapshots_dir" 30 15 4
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
