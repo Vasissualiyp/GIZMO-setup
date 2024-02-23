@@ -143,11 +143,14 @@ process_output() {
   # Above function defines the redshifts_file variable
 }
 
-obtain_redshifts_of_snapshots () {
-  local output_dir=".$1"
-  redshifts_file="${output_dir}/redshfits.csv"
+enter_analysis_directory () {
   cd ./analysis || { echo "You need the analysis directory to determine the redshifts of the snapshots"; exit 1; }
   source ./env/bin/activate || { module load python; python -m venv env; source ./env/bin/activate; pip install h5py; } # Create python env if it's not there 
+}
+obtain_redshifts_of_snapshots () {
+  local output_dir=".$1"
+  redshifts_file="${output_dir}/redshifts.csv"
+  enter_analysis_directory
   # Iterate over .hdf5 files in output_dir
   pwd
   rm "$redshifts_file"
@@ -174,11 +177,13 @@ obtain_redshifts_of_snapshots () {
 #   1. Snapshots directory - Directory containing the simulation snapshots.
 #   2. Redshifts - A list of redshifts at which to find the largest haloes.
 run_rockstar() {
-  local snapshots_dir="$1"
-  shift # Remove the first argument, leaving only redshifts.
-  local redshifts=("$@") # Remaining arguments are redshifts.
-  echo "Running Rockstar on snapshots in ${snapshots_dir} for redshifts: ${redshifts[*]}..."
+  local snapshots_dir=".$1"
+  local redshift="$2"
+  local redshifts_csv="${snapshots_dir}redshifts.csv"
+  echo "Running Rockstar on snapshots in ${snapshots_dir} for redshift: ${redshift}..."
   cd "$MAIN_DIR" 
+  enter_analysis_directory
+  rockstar_hdf5_file=$(python hdf5_utilities/find_closest_redshifts.py "$redshifts_csv" "$redshift" | tail -n 1 | awk '{print $NF}')
   # Insert command to run Rockstar and extract halo information here.
 }
 
@@ -208,6 +213,7 @@ log_info() {
 main() {
   initialize_environment
   local seeds=(11235 24654 33212) # Example seed array. Replace or extend as required.
+  local rockstar_redshifts=(30 15 4) # Example rockstar_redshfit array. Replace or extend as required.
   local seed_lvl=7 
   local music_conf="largest_halo.conf" # The location of the music file, which will be creating ICs
   local template_config="./template/largest_halo/dm_only_ics.conf" # The location of the template music file
@@ -216,15 +222,17 @@ main() {
   local parent_output_dir="./archive" # The parent location of rockstar output
   for seed in "${seeds[@]}"; do
     #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
-    # The function above defines ics_filename
+    ## The function above defines ics_filename
     #run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
-    # The function above defines output_dir 
+    ## The function above defines output_dir 
     #monitor_gizmo
-    # The function above defines snapshots_date
+    ## The function above defines snapshots_date
 	snapshots_date="./output/2024.01.22:2/"
 	process_output "$parent_output_dir" "$snapshots_date" 
-    # The function above defines rockstar_output_dir
-    run_rockstar "snapshots_dir" 30 15 4
+    # The function above defines rockstar_output_dir and redshifts_file
+    for rockstar_redshift in "${rockstar_redshifts[@]}"; do
+      run_rockstar "$snapshots_date" "$rockstar_redshift"
+    done
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
   done
