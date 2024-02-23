@@ -167,6 +167,12 @@ obtain_redshifts_of_snapshots () {
       fi
   done
   particle_mass=$(grep 'PartType1 Mass' "$snapshot_header_data" | awk '{print $3}')
+  boxsize=$(grep 'Box size' "$snapshot_header_data" | awk '{print $4}')
+  echo "boxsize: $boxsize"
+  number_of_particles=$(grep 'Number of particles type 1 (dark matter)' "$snapshot_header_data" | awk '{print $8}')
+  echo "number_of_particles: $number_of_particles"
+  avg_particle_spacing=$(grep 'Average Particle Spacing:' "$snapshot_header_data" | awk '{print $4}')
+  echo "avg_particle_spacing: $avg_particle_spacing"
   echo "Redshifts were found for each of the snapshot files:"
   cat "$redshifts_file"
 }
@@ -199,9 +205,11 @@ run_rockstar() {
   echo "$particle_mass" # Particle mass in 10^10 Msun
   # Use sed to replace everything after 'PARTICLE_MASS =' with the value of particle_mass in your file.
   cp "$rockstar_config_template" "$rockstar_config"
-  echo "cp $rockstar_config_template $rockstar_config"
-  sed -i 's/^PARTICLE_MASS =.*/PARTICLE_MASS = '"$particle_mass"'/' "$rockstar_config"
-  echo "sed -i 's/^PARTICLE_MASS =.*/PARTICLE_MASS = '$particle_mass'/' $rockstar_config"
+  # Edit the rockstar config file
+  sed -i "s/^PARTICLE_MASS =.*/PARTICLE_MASS = $particle_mass/" "$rockstar_config"
+  sed -i "s/^BOX_SIZE =.*/BOX_SIZE = $boxsize/" "$rockstar_config"
+  sed -i "s/^TOTAL_PARTICLES =.*/TOTAL_PARTICLES = $number_of_particles/" "$rockstar_config"
+  sed -i "s/^AVG_PARTICLE_SPACING =.*/AVG_PARTICLE_SPACING = $avg_particle_spacing/" "$rockstar_config"
 
   ./rockstar -c "$rockstar_config" "$full_rockstar_filepath"
 
