@@ -133,12 +133,12 @@ function run_qstat {
 process_output() {
   local parent_output_dir="$1"
   local snapshots_date="$2"
-  local redshifts_file="$3"
   echo "Processing output from ${snapshots_date}..."
   cd "$MAIN_DIR" 
   output_dir_for_snapshots="${snapshots_date}"
   rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
   obtain_redshifts_of_snapshots "$output_dir_for_snapshots"
+  # Above function defines the redshifts_file variable
 }
 
 obtain_redshifts_of_snapshots () {
@@ -157,13 +157,12 @@ obtain_redshifts_of_snapshots () {
 		  echo "Snapshot file is: $snapshot_file"
           snapshot_header_data=$(python hdf5_utilities/hdf5_reader_header.py "$snapshot_file" | tail -n 1 | awk '{print $NF}')
 		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}')
-		  snapshot_file_only=$(echo "$snapshot_file" | awk -F '/' '{print $4}')
+		  snapshot_file_only=$(echo "$snapshot_file" | awk -F '/' '{print $4}') 
 		  echo "$snapshot_file_only, $redshift" >> "$redshifts_file"
       fi
   done
   echo "Redshifts were found for each of the snapshot files:"
   cat "$redshifts_file"
-
 }
 
 # Runs the Rockstar halo finder on the simulation snapshots to identify the largest haloes
@@ -213,7 +212,6 @@ main() {
   local template_gizmo_params="./template/largest_halo/gizmo.params" # The location of the template parameters file
   local params_file="./template/zel.params" # The location of the parameters file, which will be submitted
   local parent_output_dir="./archive" # The parent location of rockstar output
-  local redshifts_file="./template/largest_halo/redshifts.csv" # The file with all the redshifts
   for seed in "${seeds[@]}"; do
     #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
     # The function above defines ics_filename
@@ -222,7 +220,7 @@ main() {
     #monitor_gizmo
     # The function above defines snapshots_date
 	snapshots_date="./output/2024.01.22:2/"
-	process_output "$parent_output_dir" "$snapshots_date" "$redshifts_file"
+	process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir
     run_rockstar "snapshots_dir" 30 15 4
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
