@@ -166,6 +166,7 @@ obtain_redshifts_of_snapshots () {
 		  echo "$snapshot_file_only, $redshift" >> "$redshifts_file"
       fi
   done
+  particle_mass=$(grep 'PartType1 Mass' "$snapshot_header_data" | awk '{print $3}')
   echo "Redshifts were found for each of the snapshot files:"
   cat "$redshifts_file"
 }
@@ -180,8 +181,9 @@ run_rockstar() {
   local snapshots_dir=".$1"
   local redshift="$2"
   local rockstar_output_dir=".$3"
-  echo "$rockstar_output_dir"
   local redshifts_csv="${snapshots_dir}redshifts.csv"
+  local rockstar_config="./rockstar.cfg"
+  local rockstar_config_template="../template/largest_halo/rockstar.cfg"
   echo "Running Rockstar on snapshots in ${snapshots_dir} for redshift: ${redshift}..."
   cd "$MAIN_DIR" 
 
@@ -190,17 +192,24 @@ run_rockstar() {
   rockstar_hdf5_file=$(python hdf5_utilities/find_closest_redshifts.py "$redshifts_csv" "$redshift")
   full_rockstar_filepath="${snapshots_dir}${rockstar_hdf5_file}"
 
+  # Run rockstar
   cd "$MAIN_DIR" 
   cd rockstar || { echo "No rockstar found. Please, install rockstar to make sure that the code works" ; exit 1; }
-  echo "./rockstar -c ./rockstar.cfg $full_rockstar_filepath"
-  ./rockstar -c ./rockstar.cfg "$full_rockstar_filepath"
-  # Now the file halos_0.0.ascii was created
+
+  echo "$particle_mass" # Particle mass in 10^10 Msun
+  # Use sed to replace everything after 'PARTICLE_MASS =' with the value of particle_mass in your file.
+  cp "$rockstar_config_template" "$rockstar_config"
+  echo "cp $rockstar_config_template $rockstar_config"
+  sed -i 's/^PARTICLE_MASS =.*/PARTICLE_MASS = '"$particle_mass"'/' "$rockstar_config"
+  echo "sed -i 's/^PARTICLE_MASS =.*/PARTICLE_MASS = '$particle_mass'/' $rockstar_config"
+
+  ./rockstar -c "$rockstar_config" "$full_rockstar_filepath"
+
+  # Now the file halos_0.0.ascii was created. Move it to the rockstar output directory
   halos_filename="halos_0.0.ascii"
   new_halos_filename="halos_z${redshift}"
-  mv "./$halos_filename" "${rockstar_output_dir}$new_halos_filename"
-
-
-  # Insert command to run Rockstar and extract halo information here.
+  mv "./$halos_filename" "${rockstar_output_dir}$new_halos_filename" || { echo "Rockstar failed. Exiting..." ; exit 1; }
+  # NEXT: Need to adjust for the size of the star particle. Probably should do it at the same point where I find redshfit...
 }
 
 # Logs key information about the simulation run to a CSV file for easy reference and analysis.
