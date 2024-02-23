@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 systemname=$(hostname)
 
 # Initializes the script environment, setting up necessary variables, directories, and templates.
@@ -137,9 +136,9 @@ process_output() {
   local redshifts_file="$3"
   echo "Processing output from ${snapshots_date}..."
   cd "$MAIN_DIR" 
-  output_dir="output/${snapshots_date}"
+  output_dir_for_snapshots="${snapshots_date}"
   rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
-  obtain_redshifts_of_snapshots "./$output_dir" "$redshifts_file"
+  obtain_redshifts_of_snapshots "$output_dir_for_snapshots" "$redshifts_file"
 }
 
 obtain_redshifts_of_snapshots () {
@@ -148,12 +147,14 @@ obtain_redshifts_of_snapshots () {
   cd ./analysis || { echo "You need the analysis directory to determine the redshifts of the snapshots"; exit 1; }
   source ./env/bin/activate || { module load python; python -m venv env; source ./env/bin/activate; pip install h5py; } # Create python env if it's not there 
   # Iterate over .hdf5 files in output_dir
+  pwd
   rm "$redshifts_file"
   echo "Snapshotfile,Redshift" > "$redshifts_file"
-  for snapshot_file in "$output_dir"/*.hdf5; do
+  for snapshot_file in "$output_dir"*.hdf5; do
       # Ensure that it's a file before processing
       if [[ -f "$snapshot_file" ]]; then
           # Extract the desired information from the last word of the last line of the script's output
+		  echo "Snapshot file is: $snapshot_file"
           snapshot_header_data=$(python hdf5_utilities/hdf5_reader_header.py "$snapshot_file" | tail -n 1 | awk '{print $NF}')
 		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}')
 		  echo "$snapshot_file, $redshift" >> "$redshifts_file"
@@ -161,6 +162,7 @@ obtain_redshifts_of_snapshots () {
   done
   echo "Redshifts were found for each of the snapshot files:"
   cat "$redshifts_file"
+
 }
 
 # Runs the Rockstar halo finder on the simulation snapshots to identify the largest haloes
@@ -212,12 +214,13 @@ main() {
   local parent_output_dir="./archive" # The parent location of rockstar output
   local redshifts_file="./template/largest_halo/redshifts.csv" # The file with all the redshifts
   for seed in "${seeds[@]}"; do
-    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
+    #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
     # The function above defines ics_filename
-    run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
+    #run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
     # The function above defines output_dir 
-    monitor_gizmo
+    #monitor_gizmo
     # The function above defines snapshots_date
+	snapshots_date="./output/2024.01.22:2/"
 	process_output "$parent_output_dir" "$snapshots_date" "$redshifts_file"
     # The function above defines rockstar_output_dir
     run_rockstar "snapshots_dir" 30 15 4
