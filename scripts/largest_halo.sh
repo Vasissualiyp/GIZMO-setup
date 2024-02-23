@@ -136,7 +136,9 @@ process_output() {
   echo "Processing output from ${snapshots_date}..."
   cd "$MAIN_DIR" 
   output_dir_for_snapshots="${snapshots_date}"
+  snapshots_date="${output_dir_for_snapshots:2}"
   rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
+  mkdir -p "$rockstar_output_dir"
   obtain_redshifts_of_snapshots "$output_dir_for_snapshots"
   # Above function defines the redshifts_file variable
 }
