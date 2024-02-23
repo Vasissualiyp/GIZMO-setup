@@ -138,12 +138,12 @@ process_output() {
   cd "$MAIN_DIR" 
   output_dir_for_snapshots="${snapshots_date}"
   rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
-  obtain_redshifts_of_snapshots "$output_dir_for_snapshots" "$redshifts_file"
+  obtain_redshifts_of_snapshots "$output_dir_for_snapshots"
 }
 
 obtain_redshifts_of_snapshots () {
   local output_dir=".$1"
-  local redshifts_file=".$2"
+  redshifts_file="${output_dir}/redshfits.csv"
   cd ./analysis || { echo "You need the analysis directory to determine the redshifts of the snapshots"; exit 1; }
   source ./env/bin/activate || { module load python; python -m venv env; source ./env/bin/activate; pip install h5py; } # Create python env if it's not there 
   # Iterate over .hdf5 files in output_dir
@@ -157,7 +157,8 @@ obtain_redshifts_of_snapshots () {
 		  echo "Snapshot file is: $snapshot_file"
           snapshot_header_data=$(python hdf5_utilities/hdf5_reader_header.py "$snapshot_file" | tail -n 1 | awk '{print $NF}')
 		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}')
-		  echo "$snapshot_file, $redshift" >> "$redshifts_file"
+		  snapshot_file_only=$(echo "$snapshot_file" | awk -F '/' '{print $4}')
+		  echo "$snapshot_file_only, $redshift" >> "$redshifts_file"
       fi
   done
   echo "Redshifts were found for each of the snapshot files:"
