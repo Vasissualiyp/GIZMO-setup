@@ -179,11 +179,27 @@ obtain_redshifts_of_snapshots () {
 run_rockstar() {
   local snapshots_dir=".$1"
   local redshift="$2"
+  local rockstar_output_dir=".$3"
+  echo "$rockstar_output_dir"
   local redshifts_csv="${snapshots_dir}redshifts.csv"
   echo "Running Rockstar on snapshots in ${snapshots_dir} for redshift: ${redshift}..."
   cd "$MAIN_DIR" 
+
+  # Identify the file which we want to use rockstar on
   enter_analysis_directory
-  rockstar_hdf5_file=$(python hdf5_utilities/find_closest_redshifts.py "$redshifts_csv" "$redshift" | tail -n 1 | awk '{print $NF}')
+  rockstar_hdf5_file=$(python hdf5_utilities/find_closest_redshifts.py "$redshifts_csv" "$redshift")
+  full_rockstar_filepath="${snapshots_dir}${rockstar_hdf5_file}"
+
+  cd "$MAIN_DIR" 
+  cd rockstar || { echo "No rockstar found. Please, install rockstar to make sure that the code works" ; exit 1; }
+  echo "./rockstar -c ./rockstar.cfg $full_rockstar_filepath"
+  ./rockstar -c ./rockstar.cfg "$full_rockstar_filepath"
+  # Now the file halos_0.0.ascii was created
+  halos_filename="halos_0.0.ascii"
+  new_halos_filename="halos_z${redshift}"
+  mv "./$halos_filename" "${rockstar_output_dir}$new_halos_filename"
+
+
   # Insert command to run Rockstar and extract halo information here.
 }
 
@@ -231,8 +247,9 @@ main() {
 	process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir and redshifts_file
     for rockstar_redshift in "${rockstar_redshifts[@]}"; do
-      run_rockstar "$snapshots_date" "$rockstar_redshift"
+      run_rockstar "$snapshots_date" "$rockstar_redshift" "$rockstar_output_dir"
     done
+	exit
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
   done
