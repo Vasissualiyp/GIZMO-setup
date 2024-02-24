@@ -89,9 +89,9 @@ if [ "$program_to_setup" == "gizmo" ]; then
     sed -i '/^[^#]/ s/^/#/' Makefile.systype
     #sed -i '29s/^.//' Makefile.systype
     if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then # Niagara
-    	echo "SYSTYPE=\"SciNet\"" >> Makefile.systype
+    	echo "\nSYSTYPE=\"SciNet\"" >> Makefile.systype
     else # Sunnyvale
-    	echo "SYSTYPE=\"CITA-starq\"" >> Makefile.systype
+    	echo "\nSYSTYPE=\"CITA-starq\"" >> Makefile.systype
     
     	# Path to the Makefile
     	makefile_path="./Makefile"

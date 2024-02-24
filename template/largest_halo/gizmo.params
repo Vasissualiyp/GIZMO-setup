@@ -20,8 +20,8 @@ ComovingIntegrationOn              1 % 1 = Make this sim cosmological
 
 %TimeBetSnapshot                    0.01 % Keep in mind that this is a scale factor for cosmological sims! And in ~Gyr otherwise
 %TimeOfFirstSnapshot               0 %For us, t0=0.27 Gyr % z = 39
-%OutputListOn                      1
-%OutputListFilename                          focused_snap_times.txt
+OutputListOn                      1
+OutputListFilename                          focused_snap_times.txt
 MinSizeTimestep                    1e-13
 MaxSizeTimestep                    5e-3
 %TreeDomainUpdateFrequency         0.003

@@ -8,8 +8,11 @@ systemname=$(hostname)
 initialize_environment() {
   echo "Initializing environment..."
   # Add environment setup commands here, like module loads or directory creation.
+  module purge
+  # This works for Niagara:
+  #module load gcc openmpi/4.1.6-intel-ucx gsl hdf5 fftw/3.3.10
   # This works for Sunnyvale:
-  #module purge; module load gcc openmpi/4.1.6-intel-ucx gsl hdf5 fftw/3.3.10
+   module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx
 
   # Get the directory where the script is located
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -254,13 +257,13 @@ main() {
   local params_file="./template/zel.params" # The location of the parameters file, which will be submitted
   local parent_output_dir="./archive" # The parent location of rockstar output
   for seed in "${seeds[@]}"; do
-    #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
-    ## The function above defines ics_filename
-    #run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
-    ## The function above defines output_dir 
-    #monitor_gizmo
-    ## The function above defines snapshots_date
-	snapshots_date="./output/2024.01.22:2/"
+    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
+    # The function above defines ics_filename
+    run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
+    # The function above defines output_dir 
+    monitor_gizmo
+    # The function above defines snapshots_date
+	#snapshots_date="./output/2024.01.22:2/"
 	process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir and redshifts_file
     for rockstar_redshift in "${rockstar_redshifts[@]}"; do
