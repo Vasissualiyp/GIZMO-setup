@@ -1,6 +1,10 @@
 #!/bin/bash
 
 systemname=$(hostname)
+if [[ $systemname != *sunnyvale* ]]; then
+  echo "This script must be run on 'ricky'. Please try again. (ssh ricky)"
+  exit 1
+fi
 
 # Initializes the script environment, setting up necessary variables, directories, and templates.
 # It also prepares the environment by loading required modules or setting software paths,
@@ -39,8 +43,7 @@ generate_ics() {
 
   cd ./music || { echo "No MUSIC directory. Make sure to set it up"; exit 1; }
 
-  #sed -i "s/seed\[$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would replace any seed lvl
-  sed -i "s/seed\[\$seed_lvl\] = .*/seed[$seed_lvl] = $seed/" "$music_conf" # would only replace a certain seed lvl
+  sed -i "s/seed\[$seed_lvl\]=.*/seed[$seed_lvl]= $seed/" "$music_conf" # would only replace a certain seed lvl
   sed -i "/.*IC.*/c\filename = ../$ics_filename.dat" "./$music_conf" # sets appropriate ICs filename
 
   ./MUSIC "./$music_conf" && echo "ICs have been created!"
@@ -248,7 +251,7 @@ log_info() {
 # processing the output, running Rockstar to find the largest haloes, and logging all relevant information.
 main() {
   initialize_environment
-  local seeds=(11235 24654 33212) # Example seed array. Replace or extend as required.
+  local seeds=(11111 11112 11113) # Example seed array. Replace or extend as required.
   local rockstar_redshifts=(30 15 4) # Example rockstar_redshfit array. Replace or extend as required.
   local seed_lvl=7 
   local music_conf="largest_halo.conf" # The location of the music file, which will be creating ICs
@@ -256,21 +259,39 @@ main() {
   local template_gizmo_params="./template/largest_halo/gizmo.params" # The location of the template parameters file
   local params_file="./template/zel.params" # The location of the parameters file, which will be submitted
   local parent_output_dir="./archive" # The parent location of rockstar output
+  main_logfile="./largesthalo_script.log"
+  echo "" > $main_logfile
   for seed in "${seeds[@]}"; do
+
+    current_date_time=$(date "+%Y-%m-%d %H:%M")
+    echo $current_date_time >> $main_logfile
+
+    echo "Generating ICs for seed $seed..."
     generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
     # The function above defines ics_filename
+
+    echo "Running gizmo..."
     run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
     # The function above defines output_dir 
+
+    echo "Monitoring gizmo..."
     monitor_gizmo
     # The function above defines snapshots_date
-	#snapshots_date="./output/2024.01.22:2/"
-	process_output "$parent_output_dir" "$snapshots_date" 
+
+    #snapshots_date="./output/2024.01.22:2/"
+    echo "Processing output..."
+    process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir and redshifts_file
+
     for rockstar_redshift in "${rockstar_redshifts[@]}"; do
+      echo "Running rockstar for redshift $rockstar_redshift..."
       run_rockstar "$snapshots_date" "$rockstar_redshift" "$rockstar_output_dir"
     done
-	exit
+    #exit
+
+    echo "Logging info for seed $seed..."
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
+    echo "Finidhed work on seed $seed" >> $main_logfile
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
   done
 }

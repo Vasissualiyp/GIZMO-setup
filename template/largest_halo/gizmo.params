@@ -7,7 +7,7 @@ OutputDir
 
 TimeBegin                          0.01 % z=99
 %TimeMax                            0.0625 % z=15 (cosmological). For us, t0=0.27 Gyr
-TimeMax                             0.2 % z=9
+TimeMax                             0.2 % z=4
 
 Omega_Matter                       0.21 %0.276
 Omega_Lambda                       0.79 %0.724
@@ -15,7 +15,7 @@ Omega_Lambda                       0.79 %0.724
 Omega_Baryon                       0.0
 HubbleParam                        0.703 %0.703
 
-BoxSize                            6e5 %(in kpc)
+BoxSize                            60000 %(in kpc)
 ComovingIntegrationOn              1 % 1 = Make this sim cosmological
 
 %TimeBetSnapshot                    0.01 % Keep in mind that this is a scale factor for cosmological sims! And in ~Gyr otherwise
