@@ -16,7 +16,7 @@ initialize_environment() {
   # This works for Niagara:
   #module load gcc openmpi/4.1.6-intel-ucx gsl hdf5 fftw/3.3.10
   # This works for Sunnyvale:
-   module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx
+   module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx python
 
   # Get the directory where the script is located
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -155,11 +155,13 @@ enter_analysis_directory () {
 }
 obtain_redshifts_of_snapshots () {
   local output_dir=".$1"
-  redshifts_file="${output_dir}/redshifts.csv"
+  #output_dir="${output_dir//:/\\:}"
+  redshifts_file="${output_dir}redshifts.csv"
   enter_analysis_directory
   # Iterate over .hdf5 files in output_dir
   pwd
   rm "$redshifts_file"
+  touch "$redshifts_file"
   echo "Snapshotfile,Redshift" > "$redshifts_file"
   for snapshot_file in "$output_dir"*.hdf5; do
       # Ensure that it's a file before processing
@@ -167,7 +169,7 @@ obtain_redshifts_of_snapshots () {
           # Extract the desired information from the last word of the last line of the script's output
 		  echo "Snapshot file is: $snapshot_file"
           snapshot_header_data=$(python hdf5_utilities/hdf5_reader_header.py "$snapshot_file" | tail -n 1 | awk '{print $NF}')
-		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}')
+		  redshift=$(grep 'Redshift' "$snapshot_header_data" | awk '{print $2}') || echo "No redshift in the grep file"
 		  snapshot_file_only=$(echo "$snapshot_file" | awk -F '/' '{print $4}') 
 		  echo "$snapshot_file_only, $redshift" >> "$redshifts_file"
       fi
@@ -263,22 +265,21 @@ main() {
   echo "" > $main_logfile
   for seed in "${seeds[@]}"; do
 
-    current_date_time=$(date "+%Y-%m-%d %H:%M")
-    echo $current_date_time >> $main_logfile
+    #current_date_time=$(date "+%Y-%m-%d %H:%M")
+    #echo $current_date_time >> $main_logfile
 
-    echo "Generating ICs for seed $seed..."
-    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
-    # The function above defines ics_filename
+    #echo "Generating ICs for seed $seed..."
+    #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
+    ## The function above defines ics_filename
 
-    echo "Running gizmo..."
-    run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
-    # The function above defines output_dir 
+    #echo "Running gizmo..."
+    #run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
+    ## The function above defines snapshots_date
 
-    echo "Monitoring gizmo..."
-    monitor_gizmo
-    # The function above defines snapshots_date
+    #echo "Monitoring gizmo..."
+    #monitor_gizmo
 
-    #snapshots_date="./output/2024.01.22:2/"
+    snapshots_date="./output/2024.02.27:2/"
     echo "Processing output..."
     process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir and redshifts_file
@@ -287,7 +288,7 @@ main() {
       echo "Running rockstar for redshift $rockstar_redshift..."
       run_rockstar "$snapshots_date" "$rockstar_redshift" "$rockstar_output_dir"
     done
-    #exit
+    exit
 
     echo "Logging info for seed $seed..."
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
