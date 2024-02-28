@@ -1,6 +1,6 @@
-% Name of the file: ICs_7_11111
+% Name of the file: ICs_8_18481
 
-InitCondFile				/fs/lustre/scratch/vpustovoit/LARGEST_HALOES/ICs_7_11111.dat
+InitCondFile				/fs/lustre/scratch/vpustovoit/LARGEST_HALOES/ICs_8_18481.dat
 Initial_Conditions_Format          1
 SnapFormat                         3
 OutputDir

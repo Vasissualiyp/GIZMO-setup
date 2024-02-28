@@ -255,9 +255,9 @@ log_info() {
 # processing the output, running Rockstar to find the largest haloes, and logging all relevant information.
 main() {
   initialize_environment
-  local seeds=(11111 11112 11113) # Example seed array. Replace or extend as required.
+  local seeds=(18481 20055 25174) # Example seed array. Replace or extend as required.
   local rockstar_redshifts=(30 15 4) # Example rockstar_redshfit array. Replace or extend as required.
-  local seed_lvl=7 
+  local seed_lvl=8
   local music_conf="largest_halo.conf" # The location of the music file, which will be creating ICs
   local template_config="./template/largest_halo/dm_only_ics.conf" # The location of the template music file
   local template_gizmo_params="./template/largest_halo/gizmo.params" # The location of the template parameters file
