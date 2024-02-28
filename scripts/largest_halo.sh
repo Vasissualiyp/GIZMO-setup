@@ -1,10 +1,10 @@
 #!/bin/bash
 
 systemname=$(hostname)
-if [[ $systemname != *sunnyvale* ]]; then
-  echo "This script must be run on 'ricky'. Please try again. (ssh ricky)"
-  exit 1
-fi
+#if [[ $systemname != *sunnyvale* ]]; then
+#  echo "This script must be run on 'ricky'. Please try again. (ssh ricky)"
+#  exit 1
+#fi
 
 # Initializes the script environment, setting up necessary variables, directories, and templates.
 # It also prepares the environment by loading required modules or setting software paths,
@@ -16,7 +16,8 @@ initialize_environment() {
   # This works for Niagara:
   #module load gcc openmpi/4.1.6-intel-ucx gsl hdf5 fftw/3.3.10
   # This works for Sunnyvale:
-   module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx python
+  module load gcc openmpi gsl hdf5 fftw python
+  #module load gcc/11.2.0 openmpi/4.1.2 gsl/2.7.1 hdf5/1.12.1-ucx fftw/3.3.10-openmpi-ucx python
 
   # Get the directory where the script is located
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -145,7 +146,7 @@ process_output() {
   snapshots_date="${output_dir_for_snapshots:2}"
   rockstar_output_dir="${parent_output_dir}/${snapshots_date}"
   mkdir -p "$rockstar_output_dir"
-  obtain_redshifts_of_snapshots "$output_dir_for_snapshots"
+  #obtain_redshifts_of_snapshots "$output_dir_for_snapshots"
   # Above function defines the redshifts_file variable
 }
 
@@ -192,6 +193,7 @@ obtain_redshifts_of_snapshots () {
 #   1. Snapshots directory - Directory containing the simulation snapshots.
 #   2. Redshifts - A list of redshifts at which to find the largest haloes.
 run_rockstar() {
+  export HDF5_DISABLE_VERSION_CHECK=1 # This is needed to run rockstar despite different compiler/linker versions
   local snapshots_dir=".$1"
   local redshift="$2"
   local rockstar_output_dir=".$3"
@@ -223,7 +225,7 @@ run_rockstar() {
 
   # Now the file halos_0.0.ascii was created. Move it to the rockstar output directory
   halos_filename="halos_0.0.ascii"
-  new_halos_filename="halos_z${redshift}"
+  new_halos_filename="halos_z${redshift}.ascii"
   mv "./$halos_filename" "${rockstar_output_dir}$new_halos_filename" || { echo "Rockstar failed. Exiting..." ; exit 1; }
   # NEXT: Need to adjust for the size of the star particle. Probably should do it at the same point where I find redshfit...
 }
@@ -265,21 +267,21 @@ main() {
   echo "" > $main_logfile
   for seed in "${seeds[@]}"; do
 
-    #current_date_time=$(date "+%Y-%m-%d %H:%M")
-    #echo $current_date_time >> $main_logfile
+    current_date_time=$(date "+%Y-%m-%d %H:%M")
+    echo $current_date_time >> $main_logfile
 
-    #echo "Generating ICs for seed $seed..."
-    #generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
-    ## The function above defines ics_filename
+    echo "Generating ICs for seed $seed..."
+    generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
+    # The function above defines ics_filename
 
-    #echo "Running gizmo..."
-    #run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
-    ## The function above defines snapshots_date
+    echo "Running gizmo..."
+    run_gizmo "$MAIN_DIR/$ics_filename.dat" "$template_gizmo_params" "$params_file"
+    # The function above defines snapshots_date
 
     #echo "Monitoring gizmo..."
-    #monitor_gizmo
+    monitor_gizmo
 
-    snapshots_date="./output/2024.02.27:2/"
+    #snapshots_date="./output/2024.02.27:2/"
     echo "Processing output..."
     process_output "$parent_output_dir" "$snapshots_date" 
     # The function above defines rockstar_output_dir and redshifts_file
@@ -288,7 +290,6 @@ main() {
       echo "Running rockstar for redshift $rockstar_redshift..."
       run_rockstar "$snapshots_date" "$rockstar_redshift" "$rockstar_output_dir"
     done
-    exit
 
     echo "Logging info for seed $seed..."
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
