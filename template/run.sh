@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --nodes=4
+#SBATCH --nodes=10
 #SBATCH --ntasks-per-node=40
-#SBATCH	--time=1:00:00
+#SBATCH	--time=24:00:00
 #SBATCH --job-name=
 #SBATCH --output=
 #SBATCH --mail-type=FAIL
