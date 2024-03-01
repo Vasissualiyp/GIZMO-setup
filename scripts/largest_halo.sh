@@ -194,9 +194,10 @@ obtain_redshifts_of_snapshots () {
 #   2. Redshifts - A list of redshifts at which to find the largest haloes.
 run_rockstar() {
   export HDF5_DISABLE_VERSION_CHECK=1 # This is needed to run rockstar despite different compiler/linker versions
-  local snapshots_dir=".$1"
+  local snapshots_date=".$1"
   local redshift="$2"
   local rockstar_output_dir=".$3"
+  local snapshots_dir="./output/$snapshots_date"
   local redshifts_csv="${snapshots_dir}redshifts.csv"
   local rockstar_config="./rockstar.cfg"
   local rockstar_config_template="../template/largest_halo/rockstar.cfg"
@@ -263,12 +264,10 @@ main() {
   local template_gizmo_params="./template/largest_halo/gizmo.params" # The location of the template parameters file
   local params_file="./template/zel.params" # The location of the parameters file, which will be submitted
   local parent_output_dir="./archive" # The parent location of rockstar output
-  main_logfile="./largesthalo_script.log"
-  echo "" > $main_logfile
   for seed in "${seeds[@]}"; do
 
     current_date_time=$(date "+%Y-%m-%d %H:%M")
-    echo $current_date_time >> $main_logfile
+    echo $current_date_time 
 
     echo "Generating ICs for seed $seed..."
     generate_ics "$seed" "$seed_lvl" "$template_config" "$music_conf" 
@@ -293,11 +292,12 @@ main() {
 
     echo "Logging info for seed $seed..."
     log_info "$seed" "snapshots_path" "ics_path" "30 15 4" "halo_size"
-    echo "Finidhed work on seed $seed" >> $main_logfile
+    echo "Finidhed work on seed $seed" 
     # Implement logic for running tasks of the previous seed while GIZMO runs the next seed.
   done
 }
 
 # Execute the main function with all passed arguments.
-main "$@"
+main_logfile="./largesthalo.log"
+main "$@" > "$main_logfile" 2>&1
                                                                                                                    
