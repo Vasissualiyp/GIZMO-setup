@@ -15,13 +15,14 @@ pull_git() {
 # Choose which repository to clone and clone it:{{{
   # Prompt the user to select which repo to clone
   echo "Which repo do you want to clone?"
-  echo "1) Public repo"
-  echo "2) Private repo"
-  echo "3) Starforge repo"
+  echo "1) Public gizmo repo"
+  echo "2) Private gizmo repo (PRIVATE)"
+  echo "3) Starforge gizmo repo (PRIVATE)"
   echo "a) GIZMO analysis"
   echo "m) MUSIC (Cosmological ICs generation)"
   echo "r) Rockstar (Halo Finder)"
   echo "g) GRACKLE (Thermochemistry library)"
+  echo "p) Peak Patch (PRIVATE)"
   read -p "Enter the number corresponding to your choice: " choice
 
   # Clone the selected repo
@@ -45,6 +46,11 @@ pull_git() {
 	  mkdir analysis
     git clone https://github.com/Vasissualiyp/GIZMO-analysis.git analysis  || echo "Failed to git clone the analysis directory"
     program_to_setup="gizmo"
+    ;;
+  a)
+	  mkdir peakpatch
+    git clone git@gitlab.com:natecarlson/peakpatch.git peakpatch  || echo "Failed to git clone the Peak Patch directory"
+    program_to_setup="peakpatch"
     ;;
   m)
     # Create temporary directory to store git-tracked parts of music
@@ -178,4 +184,8 @@ elif [ "$program_to_setup" == "grackle" ]; then
     make machine-cita
     make -j20
 #}}}
+elif [ "$program_to_setup" == "peakpatch" ]; then 
+# Make PeakPatch {{{
+    echo "The script to make Peak Patch hasn't been setup yet"
+# }}}
 fi
