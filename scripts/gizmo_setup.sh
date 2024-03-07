@@ -47,7 +47,7 @@ pull_git() {
     git clone https://github.com/Vasissualiyp/GIZMO-analysis.git analysis  || echo "Failed to git clone the analysis directory"
     program_to_setup="gizmo"
     ;;
-  a)
+  p)
 	  mkdir peakpatch
     git clone git@gitlab.com:natecarlson/peakpatch.git peakpatch  || echo "Failed to git clone the Peak Patch directory"
     program_to_setup="peakpatch"
