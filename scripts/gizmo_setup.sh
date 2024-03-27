@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 systemname=$(hostname)
 program_to_setup="none"
