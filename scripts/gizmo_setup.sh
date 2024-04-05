@@ -18,11 +18,14 @@ pull_git() {
   echo "1) Public gizmo repo"
   echo "2) Private gizmo repo (PRIVATE)"
   echo "3) Starforge gizmo repo (PRIVATE)"
+  echo ""
   echo "a) GIZMO analysis"
   echo "m) MUSIC (Cosmological ICs generation)"
   echo "r) Rockstar (Halo Finder)"
   echo "g) GRACKLE (Thermochemistry library)"
+  echo ""
   echo "p) Peak Patch (PRIVATE)"
+  echo "M) MUSIC (Cosmological ICs generation) (PRIVATE)"
   read -p "Enter the number corresponding to your choice: " choice
 
   # Clone the selected repo
@@ -57,6 +60,16 @@ pull_git() {
     mkdir musictmp
     mv -r music/* musictmp/
     git clone git@bitbucket.org:ohahn/music.git || echo "Failed to git clone music"
+    mv -r musictmp/* music/
+    rm -rf musictmp
+    cd music
+    program_to_setup="music"
+    ;;
+  M)
+    # Create temporary directory to store git-tracked parts of music
+    mkdir musictmp
+    mv -r music/* musictmp/
+    git clone git@bitbucket.org:vpustovoit/music.git || echo "Failed to git clone music"
     mv -r musictmp/* music/
     rm -rf musictmp
     cd music
