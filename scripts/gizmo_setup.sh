@@ -186,6 +186,13 @@ elif [ "$program_to_setup" == "grackle" ]; then
 #}}}
 elif [ "$program_to_setup" == "peakpatch" ]; then 
 # Make PeakPatch {{{
-    echo "The script to make Peak Patch hasn't been setup yet"
+    source ~/.bashrc
+    module load python
+    cd peakpatch || exit 1
+    python -m venv env
+    source ./env/bin/activate
+    pip install matplotlib numpy 
+    echo "Python environment for Peak Patch has been created"
+    echo "The script to make Peak Patch hasn't been set up yet"
 # }}}
 fi
