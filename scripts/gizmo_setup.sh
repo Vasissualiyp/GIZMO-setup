@@ -14,7 +14,10 @@ mkdir last_job
 pull_git() {
 # Choose which repository to clone and clone it:{{{
   # Prompt the user to select which repo to clone
+
+  echo "--------------------------------------------------"
   echo "Which repo do you want to clone?"
+  echo ""
   echo "1) Public gizmo repo"
   echo "2) Private gizmo repo (PRIVATE)"
   echo "3) Starforge gizmo repo (PRIVATE)"
@@ -26,6 +29,7 @@ pull_git() {
   echo ""
   echo "p) Peak Patch (PRIVATE)"
   echo "M) MUSIC (Cosmological ICs generation) (PRIVATE)"
+  echo "--------------------------------------------------"
   read -p "Enter the number corresponding to your choice: " choice
 
   # Clone the selected repo
