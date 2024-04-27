@@ -1062,7 +1062,8 @@ subroutine hpkvd
   call mpi_reduce(RTHLmaxl,RTHLmax,1,mpi_real,mpi_max,0,mpi_comm_world,ierr)
 
   ! WRITE HEADER FOR FIELD PARTICLES
-  call mpi_reduce(npart_eull,npart_eul,1,mpi_integer8,mpi_sum,0,mpi_comm_world,ierr)
+  ! April 2024: changed reduce to ireduce, since working with integers
+  call mpi_ireduce(npart_eull, npart_eul, 1, mpi_integer8, mpi_sum, 0, mpi_comm_world, ierr)
 
   if(iwant_field_part == 1) then
      if(myid==0) then
@@ -1533,7 +1534,6 @@ subroutine read_parameters
   use TabInterp        ! from src/modules/TabInterp/TabInterp.f90
   integer str_len,offset
   ! READ INPUT PARAMETERS
-  INTEGER(KIND=8) offset
   open(unit=1,file="hpkvd_params.bin",access='stream')
   read(1,pos=1) ireadfield,ioutshear,&
        global_redshift,maximum_redshift,num_redshifts,&
