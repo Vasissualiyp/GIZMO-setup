@@ -93,7 +93,7 @@ pull_git() {
     rm -rf musictmp
     program_to_setup="music+pp"
 	# FINALLY, CLONE pp-music-interface:
-	git clone https://github.com/Vasissualiyp/pp-music-interface pp-music-interface \
+	git clone git@github.com:Vasissualiyp/pp-music-interface.git pp-music-interface \
 			|| echo "Failed to clone pp-music-interface"
     ;;
   r)
