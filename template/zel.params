@@ -1,11 +1,3 @@
-<<<<<<< Updated upstream
-% Name of the file: ICs_8_18481
-
-InitCondFile				/fs/lustre/scratch/vpustovoit/LARGEST_HALOES/ICs_8_18481.dat
-Initial_Conditions_Format          1
-SnapFormat                         3
-OutputDir
-=======
 % Name of the file: FIRE_TEST
 %----  Relevant files
 % if restarting from snapshot file:
@@ -18,7 +10,6 @@ OutputDir
 %---- File formats (input and output)
 ICFormat      1    % 1=unformatted (gadget) binary, 3=hdf5, 4=cluster
 SnapFormat    3    % 1=unformatted (gadget) binary, 3=hdf5
->>>>>>> Stashed changes
 
 %---- Output parameters
 RestartFile                  restart
