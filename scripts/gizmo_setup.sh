@@ -52,7 +52,7 @@ pull_git() {
     ;;
   a)
     mkdir analysis
-    git clone https://github.com/Vasissualiyp/GIZMO-analysis.git analysis  || echo "Failed to git clone the analysis directory"
+    git clone git@github.com:Vasissualiyp/GIZMO-analysis.git analysis  || echo "Failed to git clone the analysis directory"
     program_to_setup="gizmo"
     ;;
   p)
