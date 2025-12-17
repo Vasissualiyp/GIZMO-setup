@@ -1,6 +1,13 @@
 #!/bin/bash
 
 systemname=$(hostname)
+if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+  slurm_mode=1
+elif [[ "$systemname" == "tri-login"* ]]; then
+  slurm_mode=1
+else
+  slurm_mode=0
+fi
 
 # function to process squeue for Niagara {{{
 function run_squeue {
@@ -53,7 +60,7 @@ function cancel_jobs {
 
   for i in "${JOBS_TO_CANCEL[@]}"; do
     JOBID=$(echo ${lines[$((i-1))]} | awk '{print $1}')
-    if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+    if [ $slurm_mode -eq 1 ]; then
       scancel "$JOBID"
     else
       qdel "$JOBID"
@@ -63,14 +70,14 @@ function cancel_jobs {
 #}}}
 
 if [[ "$1" == "--killall" ]]; then
-  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+  if [ $slurm_mode -eq 1 ]; then
     run_squeue
   else
     run_qstat
   fi
   cancel_jobs "--killall"
 else
-  if [[ "$systemname" == "nia-login"*".scinet.local" ]]; then
+  if [ $slurm_mode -eq 1 ]; then
     run_squeue
   else
     run_qstat
