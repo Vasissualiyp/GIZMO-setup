@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-NOSUBMIT=1 # Set to 0 to ACTUALLY submit jobs
+NOSUBMIT=0 # Set to 0 to ACTUALLY submit jobs
 submit_job() {
     script="$1"
     galname="$2"
@@ -34,15 +34,20 @@ submit_single_chain() {
 	#echo "Submission params: $1 $2 $3 $4"
 	local l_chain_length=$(($chain_length+$chain_start))
 	job=$(submit_job "$submission_script" "$galname" "$firstrun_restart" "$chain_start")
-	job_string="Submitted job chain: $job"
+	job_string="Submitted job chain for $galname: $job"
 	curr_chain=$(($chain_start+1))
 	while [[ $curr_chain -lt $l_chain_length ]]; do
 		job=$(submit_job "$submission_script" "$galname" 1 $curr_chain $job)
 		curr_chain=$(($curr_chain+1))
 		job_string="$job_string -> $job"
 	done
-	echo "Galaxy name: $galname"
-	echo "$job_string"
+	len=$((${#job_string} + 2))
+	border=$(printf "%*s" "$len" "")
+	border=${border// /━}
+
+	echo "┏${border}┒"
+	echo "┃ $job_string ┃"
+	echo "┗${border}┛"
 
 }
 #galnames="m12f m12q m12b m12c m12m"
@@ -57,3 +62,7 @@ submission_script="run_m12ANY.sh"
 for galname in $galnames; do
 	submit_single_chain "$chain_start" "$chain_length" "$submission_script" "$galname" "$firstrun_restart"
 done
+if [[ $NOSUBMIT == 1 ]]; then
+    echo "ATTENTION: Your jobs were not submitted!"
+    echo "If you want to submit the job, set NOSUBMIT=0 in the script before running it!"
+fi
